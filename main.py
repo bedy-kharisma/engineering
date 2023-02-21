@@ -210,7 +210,7 @@ def Standards():
     # Load the pickle file from the cloned directory
     pickle_file = repo_dir + '/standards.pkl'
     if subprocess.call(['test', '-e', pickle_file]) == 0:
-    standards = pd.read_pickle(pickle_file)
+        standards = pd.read_pickle(pickle_file)
     keyword = st.text_input('Pilih keyword yang ingin Anda cari')
     #filter
     filtered_std = standards[standards['text'].str.contains(keyword)]

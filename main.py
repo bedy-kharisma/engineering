@@ -10,7 +10,6 @@ import requests
 import joblib
 from io import BytesIO
 from github import Github
-import pickle
 
 
 def validate_numeric(user_input):
@@ -632,9 +631,9 @@ def Matcod():
                     database_df = database_df.append({'Kode Material': code+user_input, 'Deskripsi': deskripsi, 'Specification':   spec,'UoM':  uom,'Requester':   requester, 'Verification Status': "Unverified"}, ignore_index=True)    
                     g = Github("bedy-kharisma","miupiu19")
                     repo = g.get_repo("bedy-kharisma/engineering")
-                    contents = repo.get_contents('database_df.pkl')
-                    new_content = pickle.dumps(database_df)
-                    repo.update_file(contents.path, "update", new_content, contents.sha)
+                    contents = repo.get_contents('test.txt')
+                    #new_content = pickle.dumps(database_df)
+                    repo.update_file(contents.path, "update", "coba lagi", contents.sha)
                     #st.experimental_rerun()
 
         else:

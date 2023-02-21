@@ -203,7 +203,14 @@ def Supplier():
 
 def Standards():
     st.empty()
-    standards = pd.read_pickle('./standards.pkl')
+    # Clone the GitHub repository
+    repo_url = 'https://github.com/bedy-kharisma'
+    repo_dir = 'engineering'
+    subprocess.call(['git', 'clone', repo_url, repo_dir])
+    # Load the pickle file from the cloned directory
+    pickle_file = repo_dir + '/standards.pkl'
+    if subprocess.call(['test', '-e', pickle_file]) == 0:
+    standards = pd.read_pickle(pickle_file)
     keyword = st.text_input('Pilih keyword yang ingin Anda cari')
     #filter
     filtered_std = standards[standards['text'].str.contains(keyword)]

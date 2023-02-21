@@ -205,7 +205,7 @@ def Supplier():
 def Standards():
     st.empty()
     # Define the URL of the file on the public GitHub repository
-    file_url = 'https://github.com/bedy-kharisma/engineering/blob/main/standards.pkl?raw=true'
+    file_url = 'https://github.com/bedy-kharisma/engineering/blob/main/standards.pkl'
     # Download the file contents from the URL
     response = requests.get(file_url)
     # Load the pickle file from the downloaded contents

@@ -431,7 +431,7 @@ def FBS():
             AgGrid(df,gridOptions=gridoptions, height=500, theme='alpine')
 
 def Matcod():
-    st.empty()
+   
     pickle_file = 'database_df.pkl'
     file_url = 'https://raw.githubusercontent.com/bedy-kharisma/engineering/main/'+ pickle_file
     response = requests.get(file_url)

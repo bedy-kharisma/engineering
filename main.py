@@ -210,9 +210,9 @@ def Standards():
     file_url = 'https://raw.githubusercontent.com/bedy-kharisma/engineering/main/standards.pkl'
     # Download the file contents from the URL
     response = requests.get(file_url)
-    # Load the pickle file from the downloaded contents
     if response.status_code == 200:
-        standards = joblib.load(BytesIO(response.content))
+        content = BytesIO(response.content)
+        response = joblib.load(content)
     
         standards = pd.read_pickle(response)
         keyword = st.text_input('Pilih keyword yang ingin Anda cari')

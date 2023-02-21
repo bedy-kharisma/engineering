@@ -230,8 +230,41 @@ def Standards():
 
         AgGrid(standards_df, gridOptions=gridoptions, allow_unsafe_jscode=True, height=500, theme='alpine')
 
+def FMECA():
+    st.empty()
+    uploaded_file2 = st.file_uploader("Upload a CSV or Excel file of Product Breakdown Structure:", type=["csv", "xlsx"])
+    if uploaded_file2 is not None:
+        data1 = pd.read_csv(uploaded_file2) if uploaded_file2.type=='csv' else pd.read_excel(uploaded_file2)
+        #get types_of_train sheet id
+        FMECA='18wTCYGDmtYUVJ5WBb_lrG-J6jY-O44v_Pl2G4mnyuxY'
+        #convert google sheet to csv for easy handling -> types_of_train (tot)
+        FMECA_url=(f"https://docs.google.com/spreadsheets/d/{FMECA}/export?format=csv")
+        #create dataframe from csv
+        FMECA_df=pd.read_csv(FMECA_url)
+        # Filter the columns in dataset A to match the first 5 columns of dataset B
+        columns_to_keep = FMECA_df.columns[:5]
+        data1 = data1[data1.columns.intersection(FMECA_df.columns)]
+        filter1 = FMECA_df["MPG name"].isin(data1["MPG name"])
+        filter2 = FMECA_df["SPG name"].isin(data1["SPG name"])
+        filter3 = FMECA_df["sub subproduct groups"].isin(data1["sub subproduct groups"])
+        
+        merged_df=FMECA_df[filter1&filter2&filter3]
+        
+    else:
+        st.warning("Please upload a CSV or Excel file for the second dataset") 
+   
+   
+    if st.button("Generate initial FMECA") and uploaded_file2 is not None:
+        # Display the DataFrame
+        gd=GridOptionsBuilder.from_dataframe(merged_df)
+        gd.configure_pagination(enabled=True)
+        gd.configure_default_column(editable=False,groupable=True)
+        gridoptions=gd.build()
+        AgGrid(merged_df,gridOptions=gridoptions, height=500, theme='alpine')
+
 page_names_to_funcs = {
     "Product Breakdown Structure": system_requirement,
+    "Initial FMECA":FMECA,
     "Standards finder":Standards,
     "Possible Supplier":Supplier,
     

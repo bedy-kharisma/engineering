@@ -173,10 +173,56 @@ def system_requirement():
             gridoptions=gd.build()
             AgGrid(df,gridOptions=gridoptions, height=500, theme='alpine')
 
-        
+def Supplier():
+    st.empty()
+    #get supplier id
+    Suppplier='1_Gtz3x6yNI1qAvwaFdGSggfzrdf_6TtVvcL5Ny_6wOE'
+    #convert google sheet to csv for easy handling -> types_of_train (tot)
+    Suppplier_url=(f"https://docs.google.com/spreadsheets/d/{Suppplier}/export?format=csv")
+    #create dataframe from csv
+    Suppplier_df=pd.read_csv(Suppplier_url)
+    
+    unq_cat=Suppplier_df['Category'].unique()
+    cat=st.selectbox("Pilih Category yang ada",unq_cat)
+    unq_subcat = Suppplier_df[Suppplier_df['Category'].str.contains(cat)]['SubName Category'].unique()
+    subcat=st.selectbox("Pilih Sub Category yang ada",unq_subcat)
+    unq_subsubcat = Suppplier_df[Suppplier_df['Category'].str.contains(cat)&Suppplier_df['SubName Category'].str.contains(subcat)]['Sub SubName category'].unique()
+    subsubcat=st.selectbox("Pilih Sub SubCategory yang ada",unq_subsubcat)
+    
+  
+    #filter
+    filtered_Suppplier = Suppplier_df[Suppplier_df['Category'].str.contains(cat)&Suppplier_df['SubName Category'].str.contains(subcat)&Suppplier_df['Sub SubName category'].str.contains(subsubcat)]
+   
+    st.write(f"{filtered_Suppplier.shape[0]} number of supplier found using keyword : {cat} & {subcat} & {subsubcat}")
+    # Display the DataFrame
+    gd=GridOptionsBuilder.from_dataframe(filtered_Suppplier )
+    gd.configure_pagination(enabled=True)
+    gd.configure_default_column(editable=False,groupable=True)
+    gridoptions=gd.build()
+    AgGrid(filtered_Suppplier ,gridOptions=gridoptions, height=500, theme='alpine')
+
+def Standards():
+    st.empty()
+    standards = pd.read_pickle('./standards.pkl')
+    keyword = st.text_input('Pilih keyword yang ingin Anda cari')
+    #filter
+    filtered_std = standards[standards['text'].str.contains(keyword)]
+    standards_df=filtered_std[["location","name","id"]]
+    if keyword!="":
+        st.write(f"{standards_df.shape[0]} number of standards found using keyword : {keyword}")
+
+    # Display the DataFrame
+    gd=GridOptionsBuilder.from_dataframe(standards_df)
+    gd.configure_column("id", headerName="id", cellRenderer=JsCode('''function(params) {return '<a href="https://drive.google.com/file/d/' + params.value + '/view" target="_blank">' + params.value + '</a>'}'''),
+                    width=300)
+    gridoptions=gd.build()
+
+    AgGrid(standards_df, gridOptions=gridoptions, allow_unsafe_jscode=True, height=500, theme='alpine')
+
 page_names_to_funcs = {
     "Product Breakdown Structure": system_requirement,
- 
+    "Standards finder":Standards,
+    "Possible Supplier":Supplier,
     
     }
 

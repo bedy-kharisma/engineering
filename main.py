@@ -263,7 +263,7 @@ def FMECA():
         AgGrid(merged_df,gridOptions=gridoptions, height=500, theme='alpine')
 
 def failure():
-    caching.clear_cache()
+    st.empty()
     #get sheet id
     sheet_id='1yYY6kEVkBRRdmNcGG1cG2F3gbPA_OZJ5rUTWahx5X-U'
     #convert google sheet to csv for easy handling

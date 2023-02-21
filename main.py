@@ -632,7 +632,7 @@ def Matcod():
                     g = Github("bedy-kharisma","miupiu19")
                     repo = g.get_repo("bedy-kharisma/engineering")
                     contents = repo.get_contents('database_df.pkl')
-                    new_content = BytesIO(io.BytesIO(database_df))
+                    new_content = io.BytesIO(database_df)
                     repo.update_file(contents.path, "update",new_content, contents.sha)
                     #st.experimental_rerun()
 

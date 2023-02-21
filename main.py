@@ -628,12 +628,10 @@ def Matcod():
                     submit= st.form_submit_button("Submit")
                 if submit:
                     database_df = database_df.append({'Kode Material': code+user_input, 'Deskripsi': deskripsi, 'Specification':   spec,'UoM':  uom,'Requester':   requester, 'Verification Status': "Unverified"}, ignore_index=True)    
-                    g = Github("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")
+                    g = Github("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")
                     repo = g.get_repo("bedy-kharisma/engineering")
-                    file_path = 'database_df.pkl'
-                    new_content = database_df.to_pickle()
-                    commit_message = 'Update database_df.pkl'
-                    repo.update_file(file_path, commit_message, new_content, file_content.sha)
+                    contents = repo.get_contents('database_df.pkl')
+                    repo.update_file(contents.path, "update", database_df.to_pickle(), contents.sha)
                     st.experimental_rerun()
 
         else:
@@ -671,12 +669,10 @@ def Matcod():
                 database_df=pd.DataFrame(data)
                 
                 st.info("Total rows :"+str(len(database_df)))
-                g = Github("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")
+                g = Github("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")
                 repo = g.get_repo("bedy-kharisma/engineering")
-                file_path = 'database_df.pkl'
-                new_content = database_df.to_pickle()
-                commit_message = 'Update database_df.pkl'
-                repo.update_file(file_path, commit_message, new_content, file_content.sha)
+                contents = repo.get_contents('database_df.pkl')
+                repo.update_file(contents.path, "update", database_df.to_pickle(), contents.sha)
                 st.experimental_rerun()
 
             if funct =='Edit':
@@ -692,12 +688,10 @@ def Matcod():
                 data=aggrid['data']
                 database_df=pd.DataFrame(data)
                 st.info("Total rows :"+str(len(database_df)))
-                g = Github("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")
+                g = Github("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")
                 repo = g.get_repo("bedy-kharisma/engineering")
-                file_path = 'database_df.pkl'
-                new_content = database_df.to_pickle()
-                commit_message = 'Update database_df.pkl'
-                repo.update_file(file_path, commit_message, new_content, file_content.sha)
+                contents = repo.get_contents('database_df.pkl')
+                repo.update_file(contents.path, "update", database_df.to_pickle(), contents.sha)
                 st.experimental_rerun()
 
 

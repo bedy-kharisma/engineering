@@ -211,10 +211,10 @@ def Standards():
     # Download the file contents from the URL
     response = requests.get(file_url)
     if response.status_code == 200:
-        content = BytesIO(response.content)
-        response = joblib.load(content)
+        #content = BytesIO(response.content)
+        #response = joblib.load(content)
     
-        standards = pd.read_pickle(response)
+        standards = pd.read_pickle(response.content)
         keyword = st.text_input('Pilih keyword yang ingin Anda cari')
         #filter
         filtered_std = standards[standards['text'].str.contains(keyword)]

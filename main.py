@@ -226,7 +226,7 @@ def Standards():
                     width=300)
     gridoptions=gd.build()
 
-        AgGrid(standards_df, gridOptions=gridoptions, allow_unsafe_jscode=True, height=500, theme='alpine')
+    AgGrid(standards_df, gridOptions=gridoptions, allow_unsafe_jscode=True, height=500, theme='alpine')
 
 page_names_to_funcs = {
     "Product Breakdown Structure": system_requirement,

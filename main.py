@@ -7,6 +7,8 @@ import  openpyxl
 import pandas as pd
 from streamlit import caching
 import requests
+import joblib
+from io import BytesIO
 
 
 def validate_numeric(user_input):
@@ -205,12 +207,12 @@ def Supplier():
 def Standards():
     st.empty()
     # Define the URL of the file on the public GitHub repository
-    file_url = 'https://github.com/bedy-kharisma/engineering/blob/main/standards.pkl'
+    file_url = 'https://raw.githubusercontent.com/bedy-kharisma/engineering/main/standards.pkl'
     # Download the file contents from the URL
-    response = requests.get(file_url)
+    response = joblib.load(BytesIO(requests.get(file_url).content))
     # Load the pickle file from the downloaded contents
     if response.status_code == 200:
-        standards = pd.read_pickle(response.content)
+        standards = pd.read_pickle(response)
         keyword = st.text_input('Pilih keyword yang ingin Anda cari')
         #filter
         filtered_std = standards[standards['text'].str.contains(keyword)]

@@ -211,20 +211,20 @@ def Standards():
     # Load the pickle file from the downloaded contents
     if response.status_code == 200:
         standards = pd.read_pickle(response.content)
-    keyword = st.text_input('Pilih keyword yang ingin Anda cari')
-    #filter
-    filtered_std = standards[standards['text'].str.contains(keyword)]
-    standards_df=filtered_std[["location","name","id"]]
-    if keyword!="":
-        st.write(f"{standards_df.shape[0]} number of standards found using keyword : {keyword}")
+        keyword = st.text_input('Pilih keyword yang ingin Anda cari')
+        #filter
+        filtered_std = standards[standards['text'].str.contains(keyword)]
+        standards_df=filtered_std[["location","name","id"]]
+        if keyword!="":
+            st.write(f"{standards_df.shape[0]} number of standards found using keyword : {keyword}")
 
-    # Display the DataFrame
-    gd=GridOptionsBuilder.from_dataframe(standards_df)
-    gd.configure_column("id", headerName="id", cellRenderer=JsCode('''function(params) {return '<a href="https://drive.google.com/file/d/' + params.value + '/view" target="_blank">' + params.value + '</a>'}'''),
-                    width=300)
-    gridoptions=gd.build()
+        # Display the DataFrame
+        gd=GridOptionsBuilder.from_dataframe(standards_df)
+        gd.configure_column("id", headerName="id", cellRenderer=JsCode('''function(params) {return '<a href="https://drive.google.com/file/d/' + params.value + '/view" target="_blank">' + params.value + '</a>'}'''),
+                        width=300)
+        gridoptions=gd.build()
 
-    AgGrid(standards_df, gridOptions=gridoptions, allow_unsafe_jscode=True, height=500, theme='alpine')
+        AgGrid(standards_df, gridOptions=gridoptions, allow_unsafe_jscode=True, height=500, theme='alpine')
 
 page_names_to_funcs = {
     "Product Breakdown Structure": system_requirement,

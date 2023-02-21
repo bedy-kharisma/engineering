@@ -325,10 +325,119 @@ def failure():
     unique_df  = unique_df .reset_index().drop(columns='index')
     st.dataframe(unique_df[['Item Ref', 'Item Name','Total Operating Hours','Total Quantity','Jumlah kegagalan','Failure Rate']])
 
+def FBS():
+    st.empty()
+    st.title("Function Breakdown Structure")
+    st.write(
+        """This app streamlines the initial engingeeing process for a railway vehicle manufacturer by allowing users to select functions based on the [BS EN 15380-4-2013 standard](https://drive.google.com/file/d/19Wmq1jLGlQdNZL9UpnUgL80Ec5c-gC1M/view?usp=share_link). It simplifies the initial steps of RAMS, such as system requirements, selection, and design, but please note that the app is not meant to fully cover the whole process. Human supervision is still necessary to ensure accuracy.
+        """
+    )
+    
+    tab1,tab2 = st.tabs(["Function Breakdown Picker 🍒","Function Breakdown Checker ✔️"])
+    with tab1:
+        #get sheet id level1-3 FBS
+        sheet_id='1yEtUmBuxRewIiclGothFn9IaZdgm458owf8V_ZJnYQk'
+        #convert google sheet to csv for easy handling
+        csv_url=(f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv")
+        #create dataframe from csv
+        fbs_df=pd.read_csv(csv_url,on_bad_lines='skip')
+        ##################
+        to_filter_columns = st.multiselect("Function Level 1 apa sajakah yang akan Anda gunakan", fbs_df['level 1 Function'].unique(),fbs_df['level 1 Function'].unique(),key=1)
+
+        modification_container = st.container()
+        with modification_container:
+
+            level2 = []
+            level3 = []
+
+            for i in to_filter_columns: 
+                if pd.isna(i):
+                    continue
+                left, right = st.columns((1, 20))
+                left.write("↳")
+                with st.expander(f"Choose Level 3 Function group on {i}"):
+                    user_lvl2_input = right.multiselect(
+                        f"Choose Level 2 Function group on {i}",
+                        fbs_df.loc[fbs_df['level 1 Function'] == i, 'level 2 Function'].dropna().unique(),
+                        default=fbs_df.loc[fbs_df['level 1 Function'] == i, 'level 2 Function'].dropna().unique(),key=str(i)
+                    )
+                    level2 += user_lvl2_input
+                    for j in user_lvl2_input: 
+                        if pd.isna(j):
+                            continue
+                        left, right = st.columns((3, 20))
+                        left.write("↳↳")
+
+                        user_lvl3_input = right.multiselect(
+                            f"Choose Level 3 Function on {j}",
+                            fbs_df.loc[fbs_df['level 2 Function'] == j, 'level 3 Function'].dropna().unique(),
+                            default=fbs_df.loc[fbs_df['level 2 Function'] == j, 'level 3 Function'].dropna().unique(),key=str(i) + str(j)
+                        )
+                        level3 += user_lvl3_input
+        fbs_df = fbs_df[fbs_df['level 1 Function'].isin(to_filter_columns)]
+        fbs_df = fbs_df[fbs_df['level 2 Function'].isin(level2)]
+        fbs_df = fbs_df[fbs_df['level 3 Function'].isin(level3)]
+        st.markdown("## Berikut Functions yang Anda pilih:")
+    
+        gd=GridOptionsBuilder.from_dataframe(fbs_df)
+        gd.configure_default_column(editable=True,groupable=True)
+        gridoptions=gd.build()
+        AgGrid(fbs_df,gridOptions=gridoptions, height=800, theme='alpine')
+        
+    with tab2:
+        #get sheet id level1-3 FBS
+        sheet_id='1yEtUmBuxRewIiclGothFn9IaZdgm458owf8V_ZJnYQk'
+        #convert google sheet to csv for easy handling
+        csv_url=(f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv")
+        #create dataframe from csv
+        fbs_df=pd.read_csv(csv_url,on_bad_lines='skip')
+        ##################
+        
+        # Display the joined DataFrame
+        gd=GridOptionsBuilder.from_dataframe(fbs_df)
+        gd.configure_default_column(editable=False,groupable=True)
+        gridoptions=gd.build()
+        AgGrid(fbs_df,gridOptions=gridoptions, height=500, theme='alpine')
+
+        uploaded_file2 = st.file_uploader("Upload a CSV or Excel file for the second dataset:", type=["csv", "xlsx"])
+        if uploaded_file2 is not None:
+            data2 = pd.read_csv(uploaded_file2) if uploaded_file2.type=='csv' else pd.read_excel(uploaded_file2)
+        else:
+            st.warning("Please upload a CSV or Excel file for the second dataset")
+        if st.button("Compare Datasets"):
+            # Get the data from the reference
+            data1 = fbs_df.iloc[:,:5]
+            if data1 is not None and data2 is not None:
+                # Filter the columns in dataset 2 that are not in dataset 1
+                data2 = data2[data2.columns.intersection(data1.columns)]
+
+                # Compare the datasets
+                common = data1.merge(data2, on=data1.columns.tolist())
+                not_in_data1 = data2[~data2.index.isin(common.index)]
+                not_in_data2 = data1[~data1.index.isin(common.index)]
+                # Create a DataFrame to display the results
+                df = pd.DataFrame(columns=["Dataset 1", "Shared", "Not in Dataset 1", "Not in Dataset 2","Dataset 2"])
+                for index in not_in_data1.index:
+                    df = df.append({"Dataset 1": "", "Shared": "", "Not in Dataset 1": "✔", "Not in Dataset 2":"", "Dataset 2": not_in_data1.loc[index].values.tolist()}, ignore_index=True)
+
+                for index in not_in_data2.index:
+                    df = df.append({"Dataset 1": not_in_data2.loc[index].values.tolist(), "Shared": "", "Not in Dataset 1": "", "Not in Dataset 2": "✔", "Dataset 2":""},ignore_index=True)
+                for index in common.index:
+                    df = df.append({"Dataset 1": common.loc[index].values.tolist(), "Shared": "✔", "Not in Dataset 1": "", "Not in Dataset 2": "", "Dataset 2": common.loc[index].values.tolist()},ignore_index=True)
+
+                    
+                                        
+            # Display the DataFrame
+            gd=GridOptionsBuilder.from_dataframe(df)
+            gd.configure_default_column(editable=False,groupable=True)
+            gridoptions=gd.build()
+            AgGrid(df,gridOptions=gridoptions, height=500, theme='alpine')
+
 page_names_to_funcs = {
     "Product Breakdown Structure": system_requirement,
     "Initial FMECA":FMECA,
     "Failure Rate Calculator":failure,
+    "Function Breakdown Structure":FBS,
     "Standards finder":Standards,
     "Possible Supplier":Supplier,
     

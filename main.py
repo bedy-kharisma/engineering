@@ -633,7 +633,7 @@ def Matcod():
                     repo = g.get_repo("bedy-kharisma/engineering")
                     contents = repo.get_contents('test.txt')
                     #new_content = pickle.dumps(database_df)
-                    repo.update_file(path=contents.path, message="update", message="coba lagi", contents.sha)
+                    repo.update_file(contents.path, message="update", message="coba lagi", contents.sha)
                     #st.experimental_rerun()
 
         else:

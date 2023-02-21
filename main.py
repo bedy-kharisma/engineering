@@ -204,7 +204,7 @@ def Supplier():
 def Standards():
     st.empty()
     # Clone the GitHub repository
-    repo_url = 'https://github.com/bedy-kharisma'
+    repo_url = 'https://github.com/bedy-kharisma/'
     repo_dir = 'engineering'
     subprocess.call(['git', 'clone', repo_url, repo_dir])
     # Load the pickle file from the cloned directory

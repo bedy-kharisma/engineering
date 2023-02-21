@@ -212,8 +212,7 @@ def Standards():
     response = requests.get(file_url)
     if response.status_code == 200:
         content = BytesIO(response.content)
-        #response = joblib.load(content)
-    
+   
         standards = pd.read_pickle(content)
         keyword = st.text_input('Pilih keyword yang ingin Anda cari')
         #filter
@@ -424,8 +423,6 @@ def FBS():
                     df = df.append({"Dataset 1": not_in_data2.loc[index].values.tolist(), "Shared": "", "Not in Dataset 1": "", "Not in Dataset 2": "✔", "Dataset 2":""},ignore_index=True)
                 for index in common.index:
                     df = df.append({"Dataset 1": common.loc[index].values.tolist(), "Shared": "✔", "Not in Dataset 1": "", "Not in Dataset 2": "", "Dataset 2": common.loc[index].values.tolist()},ignore_index=True)
-
-                    
                                         
             # Display the DataFrame
             gd=GridOptionsBuilder.from_dataframe(df)
@@ -433,8 +430,265 @@ def FBS():
             gridoptions=gd.build()
             AgGrid(df,gridOptions=gridoptions, height=500, theme='alpine')
 
+def Matcod():
+    st.empty()
+    pickle_file = 'database_df.pkl'
+    file_url = 'https://raw.githubusercontent.com/bedy-kharisma/engineering/main/'+ pickle_file
+    response = requests.get(file_url)
+    if response.status_code == 200:
+        content = BytesIO(response.content)
+        database_df=pd.read_pickle(content) 
+
+    pickle_file = 'TB1_df.pkl'
+    file_url = 'https://raw.githubusercontent.com/bedy-kharisma/engineering/main/'+ pickle_file
+    response = requests.get(file_url)
+    if response.status_code == 200:
+        content = BytesIO(response.content) 
+        TB1_df=pd.read_pickle(content) 
+
+    pickle_file = 'TB2_df.pkl'   
+    file_url = 'https://raw.githubusercontent.com/bedy-kharisma/engineering/main/'+ pickle_file
+    response = requests.get(file_url)
+    if response.status_code == 200:
+        content = BytesIO(response.content) 
+        TB2_df=pd.read_pickle(content) 
+
+    pickle_file = 'Fastening_df.pkl' 
+    file_url = 'https://raw.githubusercontent.com/bedy-kharisma/engineering/main/'+ pickle_file
+    response = requests.get(file_url)
+    if response.status_code == 200:
+        content = BytesIO(response.content) 
+        Fastening_df=pd.read_pickle(content) 
+
+    pickle_file = 'maincom_df.pkl'
+    file_url = 'https://raw.githubusercontent.com/bedy-kharisma/engineering/main/'+ pickle_file
+    response = requests.get(file_url)
+    if response.status_code == 200:
+        content = BytesIO(response.content) 
+        maincom_df=pd.read_pickle(content) 
+
+    pickle_file = 'sw_df.pkl' 
+    file_url = 'https://raw.githubusercontent.com/bedy-kharisma/engineering/main/'+ pickle_file
+    response = requests.get(file_url)
+    if response.status_code == 200:
+        content = BytesIO(response.content)
+        sw_df=pd.read_pickle(content) 
+
+    pickle_file = 'el_df.pkl'
+    file_url = 'https://raw.githubusercontent.com/bedy-kharisma/engineering/main/'+ pickle_file
+    response = requests.get(file_url)
+    if response.status_code == 200:
+        content = BytesIO(response.content)
+        el_df=pd.read_pickle(content) 
+
+    pickle_file = 'brake_df.pkl'
+    file_url = 'https://raw.githubusercontent.com/bedy-kharisma/engineering/main/'+ pickle_file
+    response = requests.get(file_url)
+    if response.status_code == 200:
+        content = BytesIO(response.content)
+        brake_df=pd.read_pickle(content) 
+
+    pickle_file = 'bogie_df.pkl'
+    file_url = 'https://raw.githubusercontent.com/bedy-kharisma/engineering/main/'+ pickle_file
+    response = requests.get(file_url)
+    if response.status_code == 200:
+        content = BytesIO(response.content)
+        bogie_df=pd.read_pickle(content) 
+
+    pickle_file = 'coupler_df.pkl'    
+    file_url = 'https://raw.githubusercontent.com/bedy-kharisma/engineering/main/'+ pickle_file
+    response = requests.get(file_url)
+    if response.status_code == 200:
+        content = BytesIO(response.content)
+        coupler_df=pd.read_pickle(content) 
+
+    pickle_file = 'interior_df.pkl'
+    file_url = 'https://raw.githubusercontent.com/bedy-kharisma/engineering/main/'+ pickle_file
+    response = requests.get(file_url)
+    if response.status_code == 200:
+        content = BytesIO(response.content)
+        interior_df=pd.read_pickle(content) 
+
+    pickle_file = 'piping_df.pkl'
+    file_url = 'https://raw.githubusercontent.com/bedy-kharisma/engineering/main/'+ pickle_file
+    response = requests.get(file_url)
+    if response.status_code == 200:
+        content = BytesIO(response.content)
+        piping_df=pd.read_pickle(content)
+
+    pickle_file = 'cons_df.pkl'
+    file_url = 'https://raw.githubusercontent.com/bedy-kharisma/engineering/main/'+ pickle_file
+    response = requests.get(file_url)
+    if response.status_code == 200:
+        content = BytesIO(response.content)
+        cons_df=pd.read_pickle(content)
+
+    pickle_file = 'tools_df.pkl'
+    file_url = 'https://raw.githubusercontent.com/bedy-kharisma/engineering/main/'+ pickle_file
+    response = requests.get(file_url)
+    if response.status_code == 200:
+        content = BytesIO(response.content)
+        tools_df=pd.read_pickle(content)
+
+    pickle_file = 'raw_df.pkl' 
+    file_url = 'https://raw.githubusercontent.com/bedy-kharisma/engineering/main/'+ pickle_file
+    response = requests.get(file_url)
+    if response.status_code == 200:
+        content = BytesIO(response.content)
+        raw_df=pd.read_pickle(content)
+
+    pickle_file = 'spare_df.pkl'
+    file_url = 'https://raw.githubusercontent.com/bedy-kharisma/engineering/main/'+ pickle_file
+    response = requests.get(file_url)
+    if response.status_code == 200:
+        content = BytesIO(response.content)
+        spare_df=pd.read_pickle(content)
+
+    pickle_file = 'facilities_df.pkl'
+    file_url = 'https://raw.githubusercontent.com/bedy-kharisma/engineering/main/'+ pickle_file
+    response = requests.get(file_url)
+    if response.status_code == 200:
+        content = BytesIO(response.content)
+        facilities_df=pd.read_pickle(content)
+
+    st.title("MATERIAL CODE")
+    tab1, tab2 = st.tabs(["Request", "Verification"])
+    with tab1:
+
+        # Display the DataFrame
+        gd=GridOptionsBuilder.from_dataframe(database_df )
+        gd.configure_pagination(enabled=True)
+        gd.configure_default_column(editable=False,groupable=True)
+        gridoptions=gd.build()
+        AgGrid(database_df ,gridOptions=gridoptions, height=500, theme='alpine')
+        st.write("### If you are sure that what you are looking for is not listed there, please fill up the entry form below:")
+        #get unique
+        unq_TB1=TB1_df['NAMA'].unique()
+        # Define select as the selected value from selectbox
+        select_TB1 = st.selectbox('Choose TB1 Code',unq_TB1)
+        select_TB1 = xlookup(select_TB1, TB1_df['NAMA'],TB1_df['CODE'])
+        st.write(select_TB1)
+        #filter TB2 based on type of train selection single selectbox
+        filtered_TB2 = TB2_df[TB2_df['CODE_TB1'].str.contains(select_TB1, na=False)]
+
+        unq_TB2=filtered_TB2['NAMA'].unique()
+
+        # Define select as the selected value from selectbox
+        select_TB2 = st.selectbox('Choose TB2 Code',unq_TB2)
+        select_TB2 = xlookup(select_TB2, TB2_df['NAMA'],TB2_df['CODE_TB2'])
+
+        code=select_TB1+select_TB2
+        st.write(code)
+
+        #71 cons or tools?
+        df_dict = {"A54": el_df,"A52": el_df,"B39": Fastening_df, "B40": maincom_df, "B54": sw_df, "B52": el_df, "B47": brake_df, "B48": bogie_df, "B49": coupler_df, "B50": interior_df, "B51": piping_df, "D29": cons_df, "D30": cons_df, "D31": cons_df, "D32": cons_df, "D33": cons_df, "D61": cons_df, "D62": cons_df, "D63": cons_df, "D64": cons_df, "D65": cons_df, "D66": cons_df, "D67": cons_df, "D68": cons_df, "D69": cons_df, "D70": cons_df, "D71": cons_df, "D72": cons_df, "D73": cons_df, "D74": cons_df, "D75": cons_df, "D76": cons_df, "D80": cons_df, "D82": cons_df, "D83": cons_df, "D84": cons_df, "D98": cons_df, "D99": cons_df, "C71": tools_df, "C77": tools_df, "C78": tools_df, "C79": tools_df, "C85": tools_df, "C86": tools_df, "C87": tools_df, "C88": tools_df, "C89": tools_df, "C90": tools_df, "C91": tools_df, "C92": tools_df, "C93": tools_df, "C94": tools_df, "C95": tools_df, "C96": tools_df, "A01": raw_df, "A04": raw_df, "A09": raw_df, "A10": raw_df, "A11": raw_df, "A12": raw_df, "A13": raw_df, "A14": raw_df, "A15": raw_df, "A16": raw_df, "A17": raw_df, "A18": raw_df, "A19": raw_df, "A20": raw_df, "A21": raw_df, "A22": raw_df, "A23": raw_df, "A24": raw_df, "A25": raw_df, "B98": spare_df, "D98": spare_df, "E97": facilities_df}
+
+        skip_codes = ["B37", "B41", "B42", "B43", "B44","B45", "B46"]
+
+        if code not in skip_codes:
+            selected_df = df_dict[code]
+            if selected_df is not None:
+                gd=GridOptionsBuilder.from_dataframe(selected_df)
+                gd.configure_pagination(enabled=False)
+                gd.configure_default_column(editable=False,groupable=True)
+                gridoptions=gd.build()
+                AgGrid(selected_df ,gridOptions=gridoptions, height=500, theme='alpine', fit_columns_on_grid_load=True)
+                unq_selected_df=selected_df['DESCRIPTION'].unique()
+                select_TB3 = st.selectbox('Choose TB3 Description',unq_selected_df)
+                select_TB3 = xlookup(select_TB3, selected_df['DESCRIPTION'],selected_df['CODE'])
+                code=select_TB1+select_TB2+select_TB3
+                st.write(code)
+                df = database_df[database_df["Kode Material"].str[:7].isin([code])]
+        else:
+                code=select_TB1+select_TB2
+                df = database_df[database_df["Kode Material"].str[:3].isin([code])]
+        # Display the DataFrame
+        gd=GridOptionsBuilder.from_dataframe(df)
+        gd.configure_pagination(enabled=False)
+        gd.configure_default_column(editable=False,groupable=True)
+        gridoptions=gd.build()
+        AgGridaggrid = AgGrid(df, gridOptions=gridoptions, height=500, theme='alpine', 
+                         data_return_mode=DataReturnMode.AS_INPUT, update_on='VALUE_CHANGED',        
+                         enable_enterprise_modules=True, update_mode=GridUpdateMode.SELECTION_CHANGED,
+                         allow_unsafe_jscode=True, fit_columns_on_grid_load=True)
+
+        st.write("### If you are sure that what you are looking for is not listed there, please fill up the entry form below:")
+
+        user_input = st.text_input("Insert unique number id", "",max_chars=7, key="input")
+        if validate_numeric(user_input) and (len(code+user_input)<=12):
+            st.write("New Material Code :")
+            value_to_check=code+user_input
+            if value_to_check in database_df["Kode Material"].unique():
+                st.write(f'{value_to_check} is not unique in the material code database.')
+            else:
+                st.write(f'{value_to_check} is unique in the material code database.')
+                with st.form("entry",clear_on_submit=True):
+                    deskripsi = st.text_input("Insert description")
+                    spec = st.text_input("Insert specification")
+                    uom = st.text_input("Insert UoM")
+                    requester = st.text_input("Insert Requester ID")
+                    submit= st.form_submit_button("Submit")
+                if submit:
+                    database_df = database_df.append({'Kode Material': code+user_input, 'Deskripsi': deskripsi, 'Specification':   spec,'UoM':  uom,'Requester':   requester, 'Verification Status': "Unverified"}, ignore_index=True)    
+                    #database_df.to_pickle("./database_df.pkl" )
+                    #st.experimental_rerun()
+
+        else:
+            st.write('Please enter a numeric value only & make sure the length is <= 12 characters')
+
+
+            
+    with tab2:
+        password=st.text_input("Insert admin password","",type="password")
+        if password == "admin":
+            funct=st.radio(label="Functions:", options=['Edit','Delete'])
+            if funct =='Delete':
+                js=JsCode("""
+                    function(e) {
+                        let api = e.api;
+                        let sel = api.getSelectedRows();
+                        api.applyTransaction({remove: sel})
+                    };
+                """)
+
+                # Display the DataFrame
+                gd=GridOptionsBuilder.from_dataframe(database_df)
+                gd.configure_selection(selection_mode='single',use_checkbox=True)
+                gd.configure_grid_options(onRowSelected=js,pre_selected_rows=[])
+                gd.configure_pagination(enabled=False)
+                gd.configure_default_column(editable=True,groupable=True)
+                gridoptions=gd.build()
+                aggrid = AgGrid(database_df, gridOptions=gridoptions, height=500, theme='alpine', 
+                         data_return_mode=DataReturnMode.AS_INPUT, update_on='VALUE_CHANGED',        
+                         enable_enterprise_modules=True, update_mode=GridUpdateMode.SELECTION_CHANGED,
+                         allow_unsafe_jscode=True, fit_columns_on_grid_load=True)
+
+                # Update the original DataFrame
+                data=aggrid['data']
+                database_df=pd.DataFrame(data)
+                
+                st.info("Total rows :"+str(len(database_df)))
+                #database_df.to_pickle("./database_df.pkl" )
+
+            if funct =='Edit':
+                # Display the DataFrame
+                gd=GridOptionsBuilder.from_dataframe(database_df)
+                gd.configure_pagination(enabled=False)
+                gd.configure_default_column(editable=True,groupable=True)
+                gridoptions=gd.build()
+                aggrid = AgGrid(database_df ,gridOptions=gridoptions, height=500, theme='alpine', 
+                                data_return_mode=DataReturnMode.AS_INPUT, update_on='VALUE_CHANGED',
+                                fit_columns_on_grid_load=True)
+                # Update the original DataFrame
+                data=aggrid['data']
+                database_df=pd.DataFrame(data)
+                st.info("Total rows :"+str(len(database_df)))
+                #database_df.to_pickle("./database_df.pkl" )
+
+
 page_names_to_funcs = {
     "Product Breakdown Structure": system_requirement,
+    "Material Code":Matcod,
     "Initial FMECA":FMECA,
     "Failure Rate Calculator":failure,
     "Function Breakdown Structure":FBS,

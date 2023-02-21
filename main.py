@@ -628,7 +628,7 @@ def Matcod():
                     submit= st.form_submit_button("Submit")
                 if submit:
                     database_df = database_df.append({'Kode Material': code+user_input, 'Deskripsi': deskripsi, 'Specification':   spec,'UoM':  uom,'Requester':   requester, 'Verification Status': "Unverified"}, ignore_index=True)    
-                    g = Github("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")
+                    g = Github("bedy-kharisma","miupiu19")
                     repo = g.get_repo("bedy-kharisma/engineering")
                     contents = repo.get_contents('database_df.pkl')
                     repo.update_file(contents.path, "update", database_df.to_pickle(), contents.sha)
@@ -669,7 +669,7 @@ def Matcod():
                 database_df=pd.DataFrame(data)
                 
                 st.info("Total rows :"+str(len(database_df)))
-                g = Github("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")
+                g = Github("bedy-kharisma","miupiu19")
                 repo = g.get_repo("bedy-kharisma/engineering")
                 contents = repo.get_contents('database_df.pkl')
                 repo.update_file(contents.path, "update", database_df.to_pickle(), contents.sha)
@@ -688,7 +688,7 @@ def Matcod():
                 data=aggrid['data']
                 database_df=pd.DataFrame(data)
                 st.info("Total rows :"+str(len(database_df)))
-                g = Github("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")
+                g = Github("bedy-kharisma","miupiu19")
                 repo = g.get_repo("bedy-kharisma/engineering")
                 contents = repo.get_contents('database_df.pkl')
                 repo.update_file(contents.path, "update", database_df.to_pickle(), contents.sha)

@@ -579,8 +579,6 @@ def Matcod():
 
         code=select_TB1+select_TB2
         st.write(code)
-
-        #71 cons or tools?
         df_dict = {"A54": el_df,"A52": el_df,"B39": Fastening_df, "B40": maincom_df, "B54": sw_df, "B52": el_df, "B47": brake_df, "B48": bogie_df, "B49": coupler_df, "B50": interior_df, "B51": piping_df, "D29": cons_df, "D30": cons_df, "D31": cons_df, "D32": cons_df, "D33": cons_df, "D61": cons_df, "D62": cons_df, "D63": cons_df, "D64": cons_df, "D65": cons_df, "D66": cons_df, "D67": cons_df, "D68": cons_df, "D69": cons_df, "D70": cons_df, "D71": cons_df, "D72": cons_df, "D73": cons_df, "D74": cons_df, "D75": cons_df, "D76": cons_df, "D80": cons_df, "D82": cons_df, "D83": cons_df, "D84": cons_df, "D98": cons_df, "D99": cons_df, "C71": tools_df, "C77": tools_df, "C78": tools_df, "C79": tools_df, "C85": tools_df, "C86": tools_df, "C87": tools_df, "C88": tools_df, "C89": tools_df, "C90": tools_df, "C91": tools_df, "C92": tools_df, "C93": tools_df, "C94": tools_df, "C95": tools_df, "C96": tools_df, "A01": raw_df, "A04": raw_df, "A09": raw_df, "A10": raw_df, "A11": raw_df, "A12": raw_df, "A13": raw_df, "A14": raw_df, "A15": raw_df, "A16": raw_df, "A17": raw_df, "A18": raw_df, "A19": raw_df, "A20": raw_df, "A21": raw_df, "A22": raw_df, "A23": raw_df, "A24": raw_df, "A25": raw_df, "B98": spare_df, "D98": spare_df, "E97": facilities_df}
 
         skip_codes = ["B37", "B41", "B42", "B43", "B44","B45", "B46"]

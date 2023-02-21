@@ -631,7 +631,7 @@ def Matcod():
                     g = Github("bedy-kharisma","miupiu19")
                     repo = g.get_repo("bedy-kharisma/engineering")
                     contents = repo.get_contents('database_df.pkl')
-                    repo.update_file(contents.path, "update", database_df.to_pickle(), contents.sha)
+                    repo.update_file(contents.path, "update", database_df.to_pickle('database_df.pkl'), contents.sha)
                     st.experimental_rerun()
 
         else:
@@ -672,7 +672,7 @@ def Matcod():
                 g = Github("bedy-kharisma","miupiu19")
                 repo = g.get_repo("bedy-kharisma/engineering")
                 contents = repo.get_contents('database_df.pkl')
-                repo.update_file(contents.path, "update", database_df.to_pickle(), contents.sha)
+                repo.update_file(contents.path, "update", database_df.to_pickle('database_df.pkl'), contents.sha)
                 st.experimental_rerun()
 
             if funct =='Edit':
@@ -691,7 +691,7 @@ def Matcod():
                 g = Github("bedy-kharisma","miupiu19")
                 repo = g.get_repo("bedy-kharisma/engineering")
                 contents = repo.get_contents('database_df.pkl')
-                repo.update_file(contents.path, "update", database_df.to_pickle(), contents.sha)
+                repo.update_file(contents.path, "update", database_df.to_pickle('database_df.pkl'), contents.sha)
                 st.experimental_rerun()
 
 

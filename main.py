@@ -205,12 +205,12 @@ def Supplier():
 def Standards():
     st.empty()
     # Define the URL of the file on the public GitHub repository
-    file_url = 'https://github.com/bedy-kharisma/engineering/blob/main/standards.pkl'
+    file_url = 'https://raw.githubusercontent.com/bedy-kharisma/engineering/main/standards.pkl'
     # Download the file contents from the URL
     response = requests.get(file_url)
     # Load the pickle file from the downloaded contents
     if response.status_code == 200:
-        standards = pd.read_pickle(response.comtent)
+        standards = pd.read_pickle(response.content)
         keyword = st.text_input('Pilih keyword yang ingin Anda cari')
         #filter
         filtered_std = standards[standards['text'].str.contains(keyword)]

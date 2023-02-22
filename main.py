@@ -11,6 +11,7 @@ import joblib
 from io import BytesIO
 from github import Github
 import base64
+import pickle
 
 
 def validate_numeric(user_input):
@@ -632,11 +633,15 @@ def Matcod():
                     database_df = database_df.append({'Kode Material': code+user_input, 'Deskripsi': deskripsi, 'Specification':   spec,'UoM':  uom,'Requester':   requester, 'Verification Status': "Unverified"}, ignore_index=True)    
                     g = Github("bedy-kharisma","miupiu19")
                     repo = g.get_repo("bedy-kharisma/engineering")
-                    contents = repo.get_contents('database_df.pkl')
+                    pickle_buffer = io.BytesIO()
+                    pickle.dump(database_df, pickle_buffer)
+                    pickle_buffer.seek(0)
                     pickle_data = database_df.to_pickle()
-                    base64_data = base64.b64encode(pickle_data).decode('utf-8')
+                    base64_data = base64.b64encode(pickle_buffer.getvalue()).decode('utf-8')
+                    contents = repo.get_contents('database_df.pkl')
                     repo.delete_file(contents.path, "remove test", contents.sha)
                     repo.create_file(contents.path, "updated", base64_data)
+                    pickle_buffer.close()
                     #st.experimental_rerun()
 
         else:

@@ -637,7 +637,6 @@ def Matcod():
                     pickle_buffer = io.BytesIO()
                     pickle.dump(database_df, pickle_buffer)
                     pickle_buffer.seek(0)
-                    pickle_data = database_df.to_pickle()
                     base64_data = base64.b64encode(pickle_buffer.getvalue()).decode('utf-8')
                     contents = repo.get_contents('database_df.pkl')
                     repo.delete_file(contents.path, "remove test", contents.sha)

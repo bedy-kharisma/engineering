@@ -722,8 +722,6 @@ def Matcod():
                 sheet_url = st.secrets["private_gsheets_url"]
                 sheet=client.open("database").sheet1
                 sheet.update([database_df.columns.values.tolist()]+database_df.values.tolist())
-                st.success('New Material Code has been generated, Contact your EIM to verify it')
-
                 st.info("Total rows :"+str(len(database_df)))
 
 

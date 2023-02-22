@@ -671,6 +671,7 @@ def Matcod():
         password=st.text_input("Insert admin password","",type="password")
         if password == "admin":
             funct=st.radio(label="Functions:", options=['Edit','Delete'])
+            st.write("or edit directly on this google sheet [google sheet](https://docs.google.com/spreadsheets/d/1uFfcegQlGi6vKtyuhq_RxDKRJ26fw_bGod2Lic5Bjy8/edit?usp=sharing)")
             if funct =='Delete':
                 js=JsCode("""
                     function(e) {

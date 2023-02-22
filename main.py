@@ -656,6 +656,7 @@ def Matcod():
                     submit= st.form_submit_button("Submit")
                 if submit:
                     database_df = database_df.append({'Kode Material': code+user_input, 'Deskripsi': deskripsi, 'Specification':   spec,'UoM':  uom,'Requester':   requester, 'Verification Status': "Unverified"}, ignore_index=True)    
+                    database_df = database_df.astype(str)
                     sheet_url = st.secrets["private_gsheets_url"]
                     sheet=client.open("database").sheet1
                     sheet.update([database_df.columns.values.tolist()]+database_df.values.tolist())

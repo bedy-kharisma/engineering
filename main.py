@@ -632,23 +632,23 @@ def Matcod():
                     submit= st.form_submit_button("Submit")
                 if submit:
                     database_df = database_df.append({'Kode Material': code+user_input, 'Deskripsi': deskripsi, 'Specification':   spec,'UoM':  uom,'Requester':   requester, 'Verification Status': "Unverified"}, ignore_index=True)    
-                    g = Github("bedy-kharisma","miupiu19")
+                    g = Github("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") #PAS include workflow
                     repo = g.get_repo("bedy-kharisma/engineering")
-                    pickle_buffer = io.BytesIO()
-                    pickle.dump(database_df, pickle_buffer)
-                    pickle_buffer.seek(0)
-                    base64_data = base64.b64encode(pickle_buffer.getvalue()).decode('utf-8')
-                    
-                    try:
-                        # Get the existing file contents
-                        contents = repo.get_contents('database_df.pkl')
+                    repo.create_file("test.txt", "create", "coba lagi")
 
-                        # Delete the existing file
-                        repo.delete_file(contents.path, "remove test", contents.sha)
-                    except:
-                        pass
-                    repo.create_file(contents.path, "updated", base64_data)
-                    pickle_buffer.close()
+                    #pickle_buffer = io.BytesIO()
+                    #pickle.dump(database_df, pickle_buffer)
+                    #pickle_buffer.seek(0)
+                    #base64_data = base64.b64encode(pickle_buffer.getvalue()).decode('utf-8')
+                    #try:
+                    #    # Get the existing file contents
+                    #    contents = repo.get_contents('database_df.pkl')
+                    #    # Delete the existing file
+                    #    repo.delete_file(contents.path, "remove test", contents.sha)
+                    #except:
+                    #    pass
+                    #repo.create_file(contents.path, "updated", base64_data)
+                    #pickle_buffer.close()
                     #st.experimental_rerun()
 
         else:

@@ -632,7 +632,8 @@ def Matcod():
                     submit= st.form_submit_button("Submit")
                 if submit:
                     database_df = database_df.append({'Kode Material': code+user_input, 'Deskripsi': deskripsi, 'Specification':   spec,'UoM':  uom,'Requester':   requester, 'Verification Status': "Unverified"}, ignore_index=True)    
-                    g = Github("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") #PAS include workflow
+                    g=Github("bedy-kharisma","miupiu19", "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")
+                    #g = Github("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") #PAS include workflow
                     repo = g.get_repo("bedy-kharisma/engineering")
                     repo.create_file("test.txt", "create", "coba lagi")
 

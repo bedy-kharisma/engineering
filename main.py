@@ -14,6 +14,23 @@ import io
 import base64
 import pickle
 from github import Github, UnknownObjectException
+from google.oauth2 import service_account
+from gsheetsdb import connect
+
+# Create a connection object.
+credentials = service_account.Credentials.from_service_account_info(
+    st.secrets["gcp_service_account"],
+    scopes=[
+        "https://www.googleapis.com/auth/spreadsheets",
+    ],
+)
+conn = connect(credentials=credentials)
+
+@st.cache_data(ttl=600)
+def run_query(query):
+    rows = conn.execute(query, headers=1)
+    rows = rows.fetchall()
+    return rows
 
 def validate_numeric(user_input):
     try:
@@ -632,25 +649,11 @@ def Matcod():
                     submit= st.form_submit_button("Submit")
                 if submit:
                     database_df = database_df.append({'Kode Material': code+user_input, 'Deskripsi': deskripsi, 'Specification':   spec,'UoM':  uom,'Requester':   requester, 'Verification Status': "Unverified"}, ignore_index=True)    
-                    g=Github("bedy-kharisma","miupiu19", "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")
-                    #g = Github("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") #PAS include workflow
-                    repo = g.get_repo("bedy-kharisma/engineering")
-                    repo.create_file("test.txt", "create", "coba lagi", "coba")
+                    sheet_url = st.secrets["private_gsheets_url"]
+                    rows = run_query(f'SELECT * FROM "{sheet_url}"')
+                    for row in rows:
+                        st.write(f"{row.name} has a :{row.pet}:")
 
-                    #pickle_buffer = io.BytesIO()
-                    #pickle.dump(database_df, pickle_buffer)
-                    #pickle_buffer.seek(0)
-                    #base64_data = base64.b64encode(pickle_buffer.getvalue()).decode('utf-8')
-                    #try:
-                    #    # Get the existing file contents
-                    #    contents = repo.get_contents('database_df.pkl')
-                    #    # Delete the existing file
-                    #    repo.delete_file(contents.path, "remove test", contents.sha)
-                    #except:
-                    #    pass
-                    #repo.create_file(contents.path, "updated", base64_data)
-                    #pickle_buffer.close()
-                    #st.experimental_rerun()
 
         else:
             st.write('Please enter a numeric value only & make sure the length is <= 12 characters')

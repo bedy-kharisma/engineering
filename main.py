@@ -638,8 +638,15 @@ def Matcod():
                     pickle.dump(database_df, pickle_buffer)
                     pickle_buffer.seek(0)
                     base64_data = base64.b64encode(pickle_buffer.getvalue()).decode('utf-8')
-                    contents = repo.get_contents('database_df.pkl')
-                    repo.delete_file(contents.path, "remove test", contents.sha)
+                    
+                    try:
+                        # Get the existing file contents
+                        contents = repo.get_contents('database_df.pkl')
+
+                        # Delete the existing file
+                        repo.delete_file(contents.path, "remove test", contents.sha)
+                    except UnknownObjectException as e:
+                        print(f"Error deleting file: {str(e)}")
                     repo.create_file(contents.path, "updated", base64_data)
                     pickle_buffer.close()
                     #st.experimental_rerun()

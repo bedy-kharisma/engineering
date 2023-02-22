@@ -17,6 +17,8 @@ from github import Github, UnknownObjectException
 from google.oauth2 import service_account
 from gsheetsdb import connect
 import pyparsing
+import gspread
+
 
 # Create a connection object.
 credentials = service_account.Credentials.from_service_account_info(
@@ -26,7 +28,7 @@ credentials = service_account.Credentials.from_service_account_info(
     ],
 )
 conn = connect(credentials=credentials)
-
+client=gspread.authorize(credentials)
 
 def run_query(query):
     rows = conn.execute(query, headers=1)
@@ -651,9 +653,11 @@ def Matcod():
                 if submit:
                     database_df = database_df.append({'Kode Material': code+user_input, 'Deskripsi': deskripsi, 'Specification':   spec,'UoM':  uom,'Requester':   requester, 'Verification Status': "Unverified"}, ignore_index=True)    
                     sheet_url = st.secrets["private_gsheets_url"]
-                    rows = run_query(f'SELECT * FROM "{sheet_url}"')
-                    for row in rows:
-                        st.write(f"{row.name} has a :{row.pet}:")
+                    sheet=client.open("database").Sheet1
+                    sheet.update([database_df.columns.values.tolist()]+database_df.values.tolist())
+                    #rows = run_query(f'SELECT * FROM "{sheet_url}"')
+                    #for row in rows:
+                    #    st.write(f"{row.name} has a :{row.pet}:")
 
 
         else:

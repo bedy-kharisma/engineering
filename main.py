@@ -18,8 +18,6 @@ from google.oauth2 import service_account
 from gsheetsdb import connect
 import pyparsing
 import gspread
-#from oauth2client.service_account import ServiceAccountCredentials
-
 
 # Create a connection object.
 credentials = service_account.Credentials.from_service_account_info(
@@ -29,12 +27,6 @@ credentials = service_account.Credentials.from_service_account_info(
     ],
 )
 conn = connect(credentials=credentials)
-#credentials = ServiceAccountCredentials.from_json_keyfile_name(
-#    st.secrets["gcp_service_account"],
-#    scopes=[
-#            "https://www.googleapis.com/auth/spreadsheets","https://www.googleapis.com/auth/drive"
-#        ],
-#)
 client=gspread.authorize(credentials)
 
 def run_query(query):
@@ -462,13 +454,18 @@ def FBS():
             AgGrid(df,gridOptions=gridoptions, height=500, theme='alpine')
 
 def Matcod():
-   
-    pickle_file = 'database_df.pkl'
-    file_url = 'https://raw.githubusercontent.com/bedy-kharisma/engineering/main/'+ pickle_file
-    response = requests.get(file_url)
-    if response.status_code == 200:
-        content = BytesIO(response.content)
-        database_df=pd.read_pickle(content) 
+    sheet_id='1uFfcegQlGi6vKtyuhq_RxDKRJ26fw_bGod2Lic5Bjy8'
+    #convert google sheet to csv for easy handling
+    csv_url=(f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv")
+    #create dataframe from csv
+    database_df=pd.read_csv(csv_url,on_bad_lines='skip')
+        
+    #pickle_file = 'database_df.pkl'
+    #file_url = 'https://raw.githubusercontent.com/bedy-kharisma/engineering/main/'+ pickle_file
+    #response = requests.get(file_url)
+    #if response.status_code == 200:
+    #    content = BytesIO(response.content)
+    #    database_df=pd.read_pickle(content) 
 
     pickle_file = 'TB1_df.pkl'
     file_url = 'https://raw.githubusercontent.com/bedy-kharisma/engineering/main/'+ pickle_file
@@ -662,14 +659,11 @@ def Matcod():
                     sheet_url = st.secrets["private_gsheets_url"]
                     sheet=client.open("database").sheet1
                     sheet.update([database_df.columns.values.tolist()]+database_df.values.tolist())
-                    #rows = run_query(f'SELECT * FROM "{sheet_url}"')
-                    #for row in rows:
-                    #    st.write(f"{row.name} has a :{row.pet}:")
-
+                    st.success('New Material Code has been generated, Contact your EIM to verify it', icon="✅")
 
         else:
             st.write('Please enter a numeric value only & make sure the length is <= 12 characters')
-
+        
 
             
     with tab2:
@@ -700,15 +694,12 @@ def Matcod():
                 # Update the original DataFrame
                 data=aggrid['data']
                 database_df=pd.DataFrame(data)
-                
-                st.info("Total rows :"+str(len(database_df)))
-                #g = Github("bedy-kharisma","miupiu19")
-                #repo = g.get_repo("bedy-kharisma/engineering")
-                #contents = repo.get_contents('database_df.pkl')
-                #new_content = pickle.dumps(database_df)
-                #repo.update_file(contents.path, "update", new_content, contents.sha)
-                #st.experimental_rerun()
+                sheet_url = st.secrets["private_gsheets_url"]
+                sheet=client.open("database").sheet1
+                sheet.update([database_df.columns.values.tolist()]+database_df.values.tolist())
 
+                st.info("Total rows :"+str(len(database_df)))
+              
             if funct =='Edit':
                 # Display the DataFrame
                 gd=GridOptionsBuilder.from_dataframe(database_df)
@@ -721,13 +712,13 @@ def Matcod():
                 # Update the original DataFrame
                 data=aggrid['data']
                 database_df=pd.DataFrame(data)
+                sheet_url = st.secrets["private_gsheets_url"]
+                sheet=client.open("database").sheet1
+                sheet.update([database_df.columns.values.tolist()]+database_df.values.tolist())
+                st.success('New Material Code has been generated, Contact your EIM to verify it', icon="✅")
+
                 st.info("Total rows :"+str(len(database_df)))
-                #g = Github("bedy-kharisma","miupiu19")
-                #repo = g.get_repo("bedy-kharisma/engineering")
-                #contents = repo.get_contents('database_df.pkl')
-                #new_content = pickle.dumps(database_df)
-                #repo.update_file(contents.path, "update", new_content, contents.sha)
-                #st.experimental_rerun()
+
 
 
 page_names_to_funcs = {

@@ -632,7 +632,7 @@ def Matcod():
                     g = Github("bedy-kharisma","miupiu19")
                     repo = g.get_repo("bedy-kharisma/engineering")
                     contents = repo.get_contents('database_df.pkl')
-                    pickle_data = pd.DataFrame.to_pickle(database_df)
+                    pickle_data = pd.to_pickle(database_df)
                     base64_data = base64.b64encode(pickle_data).decode('utf-8')
                     repo.delete_file(contents.path, "remove test", contents.sha)
                     repo.create_file(contents.path, "updated", base64_data)

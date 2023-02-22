@@ -645,8 +645,8 @@ def Matcod():
 
                         # Delete the existing file
                         repo.delete_file(contents.path, "remove test", contents.sha)
-                    except UnknownObjectException as e:
-                        print(f"Error deleting file: {str(e)}")
+                    except:
+                        pass
                     repo.create_file(contents.path, "updated", base64_data)
                     pickle_buffer.close()
                     #st.experimental_rerun()

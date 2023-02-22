@@ -660,7 +660,7 @@ def Matcod():
                 if submit:
                     database_df = database_df.append({'Kode Material': code+user_input, 'Deskripsi': deskripsi, 'Specification':   spec,'UoM':  uom,'Requester':   requester, 'Verification Status': "Unverified"}, ignore_index=True)    
                     sheet_url = st.secrets["private_gsheets_url"]
-                    sheet=client.open("database").Sheet1
+                    sheet=client.open("database").sheet1
                     sheet.update([database_df.columns.values.tolist()]+database_df.values.tolist())
                     #rows = run_query(f'SELECT * FROM "{sheet_url}"')
                     #for row in rows:

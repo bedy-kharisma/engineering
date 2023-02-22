@@ -679,7 +679,11 @@ def Matcod():
                         api.applyTransaction({remove: sel})
                     };
                 """)
-
+                sheet_id='1uFfcegQlGi6vKtyuhq_RxDKRJ26fw_bGod2Lic5Bjy8'
+                #convert google sheet to csv for easy handling
+                csv_url=(f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv")
+                #create dataframe from csv
+                database_df=pd.read_csv(csv_url,on_bad_lines='skip')
                 # Display the DataFrame
                 gd=GridOptionsBuilder.from_dataframe(database_df)
                 gd.configure_selection(selection_mode='single',use_checkbox=True)
@@ -718,7 +722,7 @@ def Matcod():
                 sheet_url = st.secrets["private_gsheets_url"]
                 sheet=client.open("database").sheet1
                 sheet.update([database_df.columns.values.tolist()]+database_df.values.tolist())
-                st.success('New Material Code has been generated, Contact your EIM to verify it', icon="✅")
+                st.success('New Material Code has been generated, Contact your EIM to verify it')
 
                 st.info("Total rows :"+str(len(database_df)))
 

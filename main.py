@@ -660,7 +660,7 @@ def Matcod():
                     sheet_url = st.secrets["private_gsheets_url"]
                     sheet=client.open("database").sheet1
                     sheet.update([database_df.columns.values.tolist()]+database_df.values.tolist())
-                    st.success('New Material Code has been generated, Contact your EIM to verify it', icon="✅")
+                    st.success('New Material Code has been generated, Contact your EIM to verify it')
 
         else:
             st.write('Please enter a numeric value only & make sure the length is <= 12 characters')
@@ -695,6 +695,7 @@ def Matcod():
                 # Update the original DataFrame
                 data=aggrid['data']
                 database_df=pd.DataFrame(data)
+                database_df = database_df.astype(str)
                 sheet_url = st.secrets["private_gsheets_url"]
                 sheet=client.open("database").sheet1
                 sheet.update([database_df.columns.values.tolist()]+database_df.values.tolist())
@@ -713,6 +714,7 @@ def Matcod():
                 # Update the original DataFrame
                 data=aggrid['data']
                 database_df=pd.DataFrame(data)
+                database_df = database_df.astype(str)
                 sheet_url = st.secrets["private_gsheets_url"]
                 sheet=client.open("database").sheet1
                 sheet.update([database_df.columns.values.tolist()]+database_df.values.tolist())

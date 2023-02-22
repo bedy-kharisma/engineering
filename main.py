@@ -29,7 +29,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 #    ],
 #)
 #conn = connect(credentials=credentials)
-credentials = ServiceAccountCredentials.from_service_account_info(
+credentials = ServiceAccountCredentials.from_json_keyfile_name(
     st.secrets["gcp_service_account"],
     scopes=[
             "https://www.googleapis.com/auth/spreadsheets","https://www.googleapis.com/auth/drive"

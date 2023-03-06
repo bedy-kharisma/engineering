@@ -15,7 +15,6 @@ import base64
 import pickle
 from github import Github, UnknownObjectException
 from google.oauth2 import service_account
-from gsheetsdb import connect
 import pyparsing
 import gspread
 

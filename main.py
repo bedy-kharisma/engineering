@@ -25,7 +25,6 @@ credentials = service_account.Credentials.from_service_account_info(
         "https://www.googleapis.com/auth/spreadsheets","https://www.googleapis.com/auth/drive"
     ],
 )
-conn = connect(credentials=credentials)
 client=gspread.authorize(credentials)
 
 def run_query(query):

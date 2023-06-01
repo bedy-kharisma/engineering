@@ -34,6 +34,7 @@ from docx.shared import Inches
 import warnings
 #for chat
 from haystack import Pipeline
+from haystack.pipelines import Pipeline
 from haystack.nodes import TextConverter, PreProcessor
 from haystack.document_stores import FAISSDocumentStore, InMemoryDocumentStore
 from haystack.pipelines.standard_pipelines import TextIndexingPipeline
@@ -1402,7 +1403,8 @@ def chat():
     df = df[['name', 'url', 'text']]
     selected_columns = ['name', 'text']
     df = df[selected_columns]
-    keyword = st.text_input('Choose topic', "running dynamic")
+    keyword = st.text_input("choose topic","running dynamic")
+
     filtered_std = df[df['text'].str.contains(keyword, flags=re.IGNORECASE)]
     # Create a folder to store the text files
     folder = 'text_files'
@@ -1443,28 +1445,28 @@ def chat():
         document_store=document_store, embedding_model="sentence-transformers/multi-qa-mpnet-base-dot-v1"
     )
     document_store.update_embeddings(retriever)
-    reader = FARMReader(model_name_or_path="bert-large-uncased-whole-word-masking-finetuned-squad", use_gpu=True)
-    pipe = ExtractiveQAPipeline(reader, retriever)
-    #QnA
-    k = 5
-    query  = st.text_input('Input query:', "vehicle at what speed that must perform dynamic performance test?")
-    prediction = pipe.run(
-        query=query,
-        params={
-            "Retriever": {"top_k": k * 3},
-            "Reader": {"top_k": k * 2}
-        }
-    )
-    answer_contexts = []
-    for i in range(k):
-        answer_context = prediction['answers'][i].context
-        answer_context = answer_context.replace('\n', ' ')  # Remove line feeds
-        answer_contexts.append(answer_context)
-    joined_contexts = ' '.join(answer_contexts)
-    prompt_node = PromptNode(model_name_or_path="google/flan-t5-base", use_gpu=True)
-    prompt_text = "Consider you are a rolling stock consultant provided with this query: {query} provide answer from the following context: {contexts}. Answer:"
-    output = prompt_node.prompt(prompt_template=prompt_text, query=query, contexts=joined_contexts)
-    st.write(output[0])
+    #reader = FARMReader(model_name_or_path="bert-large-uncased-whole-word-masking-finetuned-squad", use_gpu=True)
+    
+    lfqa_prompt = PromptTemplate(
+                     name="lfqa",
+                     prompt_text="""Synthesize a comprehensive answer from the following text for the given question. 
+                                    Provide a clear and concise response that summarizes the key points and information presented in the text. 
+                                    Your answer should be in your own words and be no longer than 50 words. 
+                                    \n\n Related text: {join(documents)} \n\n Question: {query} \n\n Answer:""",
+                                )
+
+    prompt_node = PromptNode(model_name_or_path="google/flan-t5-large", default_prompt_template=lfqa_prompt)
+    
+
+    pipe = Pipeline()
+    pipe.add_node(component=retriever, name="retriever", inputs=["Query"])
+    pipe.add_node(component=prompt_node, name="prompt_node", inputs=["retriever"])
+    query=st.text_input("insert question", "at what speed does a vehicle must perform dynamic test?")
+    output = pipe.run(query=query)
+
+    st.write(output["results"])
+
+
 
 page_names_to_funcs = {
     "Product Breakdown Structure": system_requirement,

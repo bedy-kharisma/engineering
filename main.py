@@ -17,6 +17,26 @@ from github import Github, UnknownObjectException
 from google.oauth2 import service_account
 import pyparsing
 import gspread
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.cluster import KMeans, MiniBatchKMeans
+from sklearn.metrics import silhouette_score
+import re
+import os
+from io import BytesIO
+import numpy as np
+from scipy.integrate import quad
+from scipy.stats import norm
+import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
+from docx import Document
+from docx.shared import Inches
+import warnings
+
+warnings.filterwarnings("ignore")
+#Create a word doc
+doc=Document()
+
+
 
 # Create a connection object.
 credentials = service_account.Credentials.from_service_account_info(
@@ -724,6 +744,649 @@ def Matcod():
                 st.info("Total rows :"+str(len(database_df)))
 
 
+# FITTINGS
+def ExponentialFitting(Data):
+    Data = np.sort(Data)
+    r = len(Data)
+    biased_lambda = 1 / np.mean(Data)
+    lam = (r - 1) / r * biased_lambda
+    return lam
+
+def gumbelfitting(Data, n):
+    sorted_data = np.sort(Data)
+    mu = np.mean(sorted_data[-n:])
+    sigma = np.std(sorted_data[-n:])
+    return mu, sigma
+
+def LogNormalFitting(Data):
+    log_data = np.log(Data)
+    mu = np.mean(log_data)
+    stdev = np.std(log_data)
+    shape = mu
+    scale = stdev
+    return shape, scale
+
+def NormalDistributionFitting(Data):
+    mu = np.mean(Data)
+    sigma = np.std(Data)
+    return mu, sigma
+
+def weibull_fitting_lse(Data):
+    Data = np.sort(Data)
+    r = len(Data)  
+    w = np.zeros(r)
+    y = np.zeros(r)  
+    for i in range(r):
+        Fx = (i + 1) / (r + 1)
+        w[i] = ((1 - Fx) * np.log(1 - Fx))**2
+        y[i] = np.log(-np.log(1 - Fx))   
+    wlog = w * np.log(Data)
+    wlogy = wlog * y
+    wy = w * y
+    wlog2 = wlog * np.log(Data) 
+    Num = np.sum(w) * np.sum(wlogy) - np.sum(wlog) * np.sum(wy)
+    Den = np.sum(w) * np.sum(wlog2) - np.sum(wlog)**2
+    shape = Num / Den
+    Numerator = np.sum(wy) - shape * np.sum(wlog)
+    Denumerator = shape * np.sum(w)
+    scale = np.exp(-Numerator / Denumerator)
+    return shape, scale
+
+def WeibullFittingMLE(Data):
+    Data = np.sort(Data)
+    r = len(Data)
+    third = np.sum(np.log(Data)) / r
+    shape = None
+    for i in np.arange(0.01, 10, 0.001):
+        first = 1 / i
+        second = np.sum((Data**i) * np.log(Data)) / np.sum(Data**i)
+        if first - second + third < 0.0001:
+            shape = i
+            break
+    scale = (np.sum(Data**shape) / r) ** (1 / shape)  
+    return shape, scale
+#----END FITTING
+
+# Distribution tests
+def normal_distribution_test(data):
+    W = 0
+    n = len(data)
+    nh = int(np.floor(n / 2))
+    # Sorting the data
+    Sorted_Data = np.sort(data)
+    # Mean Calculation
+    Data_Avg = np.mean(data)
+    # S squared calculation
+    S_Squared = 0
+    for i in range(len(data)):
+        S_Squared = S_Squared + (Sorted_Data[i] - Data_Avg)**2
+    # a coefficient calculation
+    if n == 3:
+        a = np.sqrt(0.5)  # exact
+    else:
+        # get an initial estimate of a
+        from scipy.stats import norm
+        m = -norm.ppf(((np.arange(1, nh+1) - 0.375) / (n + 0.25)))
+        msq = 2 * np.sum(m**2)
+        mrms = np.sqrt(msq)
+        # correction factors for initial elements of a (derived to be good approximations for 4 <= n <= 1000)
+        rsn = 1 / np.sqrt(n)
+        if n <= 5:
+            polyval_coeffs = [-2.706056, 4.434685, -2.07119, -0.147981, 0.221157, 0]
+            ac1 = m / mrms + np.polyval(polyval_coeffs, rsn)
+            phi = (msq - 2 * m**2) / (1 - 2 * ac1**2)
+            a = np.concatenate([ac1.reshape(-1, 1), m[1:] / np.sqrt(phi).reshape(-1, 1)])
+        else:
+            polyval_coeffs = [-3.582633, 5.682633, -1.752461, -0.293762, 0.042981, 0]
+            ac1 = m[0] / mrms + np.polyval(polyval_coeffs, rsn)
+            ac2 = m[1] / mrms + np.polyval(polyval_coeffs, rsn)
+            phi = (msq - 2 * m[0]**2 - 2 * m[1]**2) / (1 - 2 * ac1**2 - 2 * ac2**2)
+            a = np.concatenate(([ac1, ac2], m[2:] / np.sqrt(phi)))
+    W = np.sum(a * (Sorted_Data[n - np.arange(nh) - 1] - Sorted_Data[:nh])) ** 2 / float(S_Squared)
+    # p value for the W statistic being as small as it is for a normal distribution
+    if n == 3:
+        pval = (6 / np.pi) * (np.arcsin(np.sqrt(W)) - np.arcsin(np.sqrt(0.75)))
+    elif n <= 11:
+        gamma = 0.459 * n - 2.273
+        w = -np.log(gamma - np.log(1 - W))
+        mu = np.polyval([-0.0006714, 0.025054, -0.39978, 0.5440], gamma)
+        sigma = np.exp(np.polyval([-0.0020322, 0.062767, -0.77857, 1.3822], n))
+        pval = norm.cdf((mu - w) / sigma)
+    else:
+        nl = np.log(n)
+        w = np.log(1 - W)
+        mu = np.polyval([0.0038915, -0.083751, -0.31082, -1.5861], nl)
+        sigma = np.exp(np.polyval([0.0030302, -0.082676, -0.4803], nl))
+        pval = norm.cdf((mu - w) / sigma)
+    return W, pval
+
+def exponential_test(data, r):
+    if r is None and len(data) > 0:
+        r = len(data)
+    # denominator calculation
+    den = 1 + (r + 1) / (6 * r)
+    # numerator calculation
+    num = 2 * r * (np.log((1 / r) * np.sum(data)) - (np.sum(np.log(data)) / r))
+    B = num / den
+    return B
+
+def weibull_test(data, n):
+    Sorted_Data = np.sort(data)
+    r = len(data)
+    Z = np.zeros(len(data))
+    M = np.zeros(len(data)-1)
+    # Calculation of Z
+    for i in range(1, r+1):
+        Z[i-1] = np.log(-np.log(1-((i-0.5)/(n+2.5))))
+    M = np.diff(Z)    
+    # Calculation of k
+    k1 = int(np.floor(r/2))
+    k2 = int(np.floor((r-1)/2))
+    # Calculation of numerator and denominator for M
+    num = 0
+    den = 0
+    for i in range(k1+1, r-1):
+        num = num + (np.log(Sorted_Data[i+1]) - np.log(Sorted_Data[i]))/M[i]
+    num = k1 * num
+    for i in range(k1):
+        den = den + (np.log(Sorted_Data[i+1]) - np.log(Sorted_Data[i]))/M[i]
+    den = k2 * den
+    M = num / den
+    dof1 = 2 * k1
+    dof2 = 2 * k2
+    return M, dof1, dof2
+#--- END Distribution tests
+
+# Cases function
+def cases(data, distribution, x):
+    RMTTF = 0
+    R = np.zeros(len(x))
+    hr = np.zeros(len(x))
+    PDF = np.zeros(len(x))
+    if distribution == "Normal":
+        mu, sigma = NormalDistributionFitting(data)
+        MU = mu
+        SIG = sigma
+        f = lambda t: 1/(SIG*np.sqrt(2*np.pi))*np.exp(-(1/2)*((t-MU)/SIG)**2)
+        MTTF = mu
+        for i in range(len(x)):
+            R[i],_= quad(f, x[i], np.inf)
+            hr[i] = f(x[i])/R[i]
+            PDF[i] = f(x[i])
+            if abs(MTTF - x[i]) <= 0.99:
+                RMTTF = R[i]  
+    elif distribution == "Log-Normal":
+        x[0] = 1
+        location, scale = LogNormalFitting(data)
+        LOC = round(location)
+        SCA = round(scale)
+        f = lambda t: (1/(t*SCA*np.sqrt(2*np.pi)))*np.exp(-(1/2)*((np.log(t)-LOC)/(SCA))**2)
+        mttf = lambda t: (t/(t*LOC*np.sqrt(2*np.pi)))*np.exp(-(1/2)*((np.log(t)-LOC)/(SCA))**2)
+        MTTF,_ = quad(mttf, 0, np.inf)
+        for i in range(len(x)):
+            R[i],_ = quad(f, x[i], np.inf)
+            hr[i] = f(x[i])/R[i]
+            PDF[i] = f(x[i])
+            if abs(MTTF - x[i]) <= 0.99:
+                RMTTF = R[i]  
+    elif distribution == "Exponential":
+        lambda_ = ExponentialFitting(data)
+        f = lambda t: lambda_*np.exp(-lambda_*t)
+        mttf = lambda t: t*lambda_*np.exp(-lambda_*t)
+        MTTF,_ = quad(mttf, 0.01, np.inf)
+        for i in range(len(x)):
+            R[i],_ = quad(f, x[i], np.inf)
+            hr[i] = f(x[i])/R[i]
+            PDF[i] = f(x[i])
+            if abs(MTTF - x[i]) <= 0.99:
+                RMTTF = R[i]
+        RMTTF = np.exp(-(lambda_*MTTF))   
+    elif distribution == "Weibull":
+        shape, scale = WeibullFittingMLE(data)
+        f = lambda t: (shape/scale)*((t/scale)**(shape-1))*np.exp(-(t/scale)**(shape-1))
+        Gamm = lambda t: t**((1/shape)+1)*np.exp(-t)
+        MTTF,_ = quad(Gamm, 0, np.inf)
+        MTTF=scale*MTTF
+        for i in range(len(x)):
+            R[i] = np.exp(-(x[i]/scale)**shape)
+            hr[i] = f(x[i])/R[i]
+            PDF[i] = f(x[i])
+            if abs(MTTF - x[i]) <= 0.99:
+                RMTTF = R[i]
+        print("Shape:", shape)
+        print("Scale:", scale)  
+    else:
+        print("Error: Invalid distribution input")
+    return hr, R, PDF, MTTF, RMTTF
+#--- END CASES
+
+#FIGS
+def plot_results(hr, R, PDF, MTTF, RMTTF,data,distribution):
+    if MTTF <= 10000:
+        digit=10000
+        t = np.arange(10001)
+    else:
+        num_digit=len(str(round(MTTF,0)))-1
+        digit=10**num_digit
+        t = np.arange((10**num_digit)+1)
+        hr, R, PDF, MTTF, RMTTF = cases(data, distribution, t)
+    fig = plt.figure(figsize=(16, 9))
+    gs = gridspec.GridSpec(3, 1, height_ratios=[1, 1, 1.2], hspace=0.5)
+    # Plot 1: Probability Density Function
+    ax1 = fig.add_subplot(gs[0])
+    ax1.plot(t, PDF)
+    ax1.grid(True)
+    ax1.set_xlabel("Time (hours)")
+    ax1.set_ylabel("PDF (-)")
+    ax1.set_title("Probability Density Function")
+    # Plot 2: Reliability
+    ax2 = fig.add_subplot(gs[1])
+    ax2.plot(t, R)
+    ax2.plot(MTTF, RMTTF, "ok")
+    ax2.set_xlabel("Time (hours)")
+    ax2.set_ylabel("Reliability (-)")
+    ax2.set_title("Reliability plot")
+    ax2.grid(True)
+    ax2.set_ylim([0, 1.01])
+    xticks = [0, 0.25*digit, 0.5*digit, 0.75*digit, digit]
+    xticklabels = ["0", str(0.25*digit), str(0.5*digit), str(0.75*digit), str(digit)]
+    insert_pos = 0
+    for i in range(len(xticks)-1):
+        if MTTF >= xticks[i] and MTTF <= xticks[i+1]:
+            insert_pos = i + 1
+            break
+    xticks.insert(insert_pos, MTTF)
+    xticklabels.insert(insert_pos, str(round(MTTF,2)))
+    ax2.set_xticks(xticks)
+    ax2.set_xticklabels(xticklabels)
+    ax2.legend(["Reliability", "Predicted Failure"])
+    # Plot 3: Hazard Rate
+    ax3 = fig.add_subplot(gs[2])
+    ax3.plot(t, hr)
+    ax3.set_xlabel("Time (hours)")
+    ax3.set_ylabel("Hazard rate (-)")
+    ax3.set_title("Hazard rate plot")
+    ax3.grid(True)
+    return fig
+#--- END FIGS
+
+def test(df, distribution, doc):
+    distribution=distribution
+    # Perform distribution tests and display the results    
+    Raw = df
+    row = len(Raw)
+    column = len(Raw.columns)
+    Data = Raw.iloc[:, column - 2:column].values
+    final = np.sum(Data[:, 0])
+    final=int(final)
+    output = np.zeros(final)
+    output_data = []
+    for row in Data:
+        count = row[0]  # Number of repetitions
+        value = row[1]  # Value to be repeated
+        for _ in range(count):
+            output_data.append(value)
+    output_array = np.array(output_data)
+    data = output_array
+    sorted_data = np.sort(data)
+    log_data = np.log(sorted_data)
+    st.write("The minimum value of p value for alpha = 0.05 is 0.05")
+    st.write("If the tested distribution does not meet the above value, thus there is not enough evidence to conclude that the data have the tested distribution")
+    st.write("Alpha means that the data have alpha percent correlation with the distribution")
+    doc.add_paragraph("The minimum value of p value for alpha = 0.05 is 0.05")
+    doc.add_paragraph("If the tested distribution does not meet the above value, thus there is not enough evidence to conclude that the data have the tested distribution")
+    doc.add_paragraph("Alpha means that the data have alpha percent correlation with the distribution")
+    # Perform distribution tests and display the results
+    W, pvalNormal = normal_distribution_test(sorted_data)
+    st.success("p-value for normal distribution test:"+str(round(pvalNormal, 2)))
+    doc.add_paragraph("p-value for normal distribution test:"+str(round(pvalNormal, 2)))
+    if pvalNormal > 0.05:
+        st.info("Tested distribution exceeds 0.05, there is enough evidence")
+        doc.add_paragraph("Tested distribution exceeds 0.05, there is enough evidence")
+    else:
+        st.warning("Tested distribution below 0.05, there is not enough evidence")
+        doc.add_paragraph("Tested distribution below 0.05, there is not enough evidence")            
+    W, pvalLogNormal = normal_distribution_test(log_data)
+    st.success("p-value for log-normal distribution test:"+ str(round(pvalLogNormal, 2)))
+    doc.add_paragraph("p-value for log-normal distribution test:"+ str(round(pvalLogNormal, 2)))
+    B = exponential_test(sorted_data, len(sorted_data))
+    st.success("B test value for exponential test:"+ str(round(B, 2)))
+    doc.add_paragraph("B test value for exponential test:"+ str(round(B, 2)))
+    M, dof1, dof2 = weibull_test(sorted_data, len(sorted_data))
+    st.success("M value for Weibull distribution test:"+ str(round(M, 2)))
+    doc.add_paragraph("M value for Weibull distribution test:"+ str(round(M, 2)))                
+    t = np.arange(10001)
+    hr, R, PDF, MTTF, RMTTF = cases(data, distribution, t)
+    st.success("Predicted failure in operation hour:"+ str(round(MTTF, 2)))
+    doc.add_paragraph("Predicted failure in operation hour:"+ str(round(MTTF, 2)))
+    # Display the plots
+    fig = plot_results(hr, R, PDF, MTTF, RMTTF,data,distribution)
+    st.subheader("Plots")
+    st.pyplot(fig)
+    fig.savefig("plot.png")
+    doc.add_picture("plot.png",width=Inches(5))
+    
+def remove_text_between_parentheses(text):
+    if isinstance(text, str):
+        pattern = r"\([^()]*\)"
+        return re.sub(pattern, "", text)
+    return text
+
+def remove_whitespace(sentence):
+    if isinstance(sentence, str):
+        sentence = re.sub(r'^\s+|\s+$', '', sentence)  # Remove leading/trailing whitespace
+        sentence = re.sub(r'\s+', ' ', sentence)  # Replace multiple spaces with a single space
+    return sentence
+
+def process_all_values(df, column):
+    if not isinstance(df, pd.DataFrame):
+        raise ValueError("The input should be a DataFrame.")
+    unique_values = df[column].unique()
+    new_rows = []
+    for index, row in df.iterrows():
+        if row[column] == "all":
+            for value in unique_values:
+                new_row = row.copy()
+                new_row[column] = value
+                new_rows.append(new_row)
+        else:
+            new_rows.append(row)
+    df_new = pd.DataFrame(new_rows)
+    df_new = df_new[df_new[column] != "all"]
+    return df_new
+
+def process_df(df, column):
+    if not isinstance(df, pd.DataFrame):
+        raise ValueError("The input should be a DataFrame.")
+    unique_values = df[column].unique()
+    new_rows = []
+    for index, row in df.iterrows():
+        if str(row[column]).lower() == "all":
+            for value in unique_values:
+                new_row = row.copy()
+                new_row[column] = value
+                new_rows.append(new_row)
+        else:
+            new_rows.append(row)
+    df_new = pd.DataFrame(new_rows)
+    df_new = df_new.fillna(df_new.loc[df_new[column].str.lower() == "all"].iloc[0])
+    df_new = df_new[df_new[column].str.lower() != "all"]
+    df_new = df_new.reset_index(drop=True)
+    return df_new
+
+def mtbf_clc(doc):
+    doc.add_heading("MTBF Calculation",level=1)
+    choose=st.radio("Are you going to include MPG-SPG-SSPG as per BS EN 15380-2 standard?",('Yes','No'),key=2)
+    uploaded_file = st.file_uploader("Upload Filled delivery dates file, make sure you are using MM/DD/YYYY date format", type=["csv","xlsx"])
+    updated_file = st.file_uploader("Upload Updated Cluster csv file", type=["csv","xlsx"])
+    # Allow the user to upload the filled Excel sheet
+    if uploaded_file and updated_file is not None:
+        file_extension = uploaded_file.name.split('.')[-1]
+        if file_extension.lower() == "xlsx":
+            uploaded_df = pd.read_excel(uploaded_file)
+        elif file_extension.lower() == "csv":
+            uploaded_df = pd.read_csv(uploaded_file)
+        else:
+            st.error("Unsupported file format. Please upload either a CSV or XLSX file.")
+        file_extension = updated_file.name.split('.')[-1]
+        if file_extension.lower() == "xlsx":
+            updated_df = pd.read_excel(updated_file)
+        elif file_extension.lower() == "csv":
+            updated_df = pd.read_csv(updated_file)
+        else:
+            st.error("Unsupported file format. Please upload either a CSV or XLSX file.")
+        distribution = st.selectbox('Select Distribution Test?',('Normal', 'Log-Normal', 'Weibull'))
+        doc.add_heading("Using "+str(distribution)+" distribution")
+        daily_hours=st.number_input("Insert daily operating hours", min_value=0, max_value=24, value=20,step=1)
+        doc.add_heading("Assuming it is operated "+str(daily_hours)+" hours per day")
+        if st.button(f'Process MTBF Calculation using {distribution} Distribution'):                 
+            uploaded_df[['Kereta', 'TS']] = uploaded_df['Trainset'].str.split('-', expand=True)
+            uploaded_df = uploaded_df.drop(columns=['Trainset'])
+            uploaded_df = uploaded_df.dropna(how='any')
+            uploaded_df['Kereta'] = uploaded_df['Kereta'].str.strip()
+            uploaded_df['TS'] = uploaded_df['TS'].str.strip()
+            updated_df['TS'] = updated_df['TS'].astype(str).str.split('.').str[0]
+            updated_df['Tanggal']=pd.to_datetime(updated_df['Tanggal']).dt.date
+            # Find delivery time based on matching 'TS' and 'Kereta'
+            merged_df = updated_df
+            merged_df['Delivery Date'] = merged_df.apply(lambda row: 
+                uploaded_df.loc[(uploaded_df['TS'] == row['TS']) & (uploaded_df['Kereta'] == row['Kereta']), 'Delivery Date'].values[0] 
+                if row['TS'] in uploaded_df['TS'].values and row['Kereta'] in uploaded_df['Kereta'].values and uploaded_df.loc[(uploaded_df['TS'] == row['TS']) & (uploaded_df['Kereta'] == row['Kereta'])].shape[0] > 0 
+                else '', axis=1)
+            merged_df['Delivery Date'] = merged_df.apply(lambda row: uploaded_df.loc[(uploaded_df['TS'] == row['TS']) & (uploaded_df['Kereta'] == row['Kereta']), 'Delivery Date'].values[0] if row['TS'] in uploaded_df['TS'].values and row['Kereta'] in uploaded_df['Kereta'].values and uploaded_df.loc[(uploaded_df['TS'] == row['TS']) & (uploaded_df['Kereta'] == row['Kereta'])].shape[0] > 0 else '', axis=1)
+            merged_df['Tanggal'] = pd.to_datetime(merged_df['Tanggal'])
+            merged_df['Delivery Date'] = pd.to_datetime(merged_df['Delivery Date'])
+            merged_df['Time Difference (days)'] = (merged_df['Tanggal'] - merged_df['Delivery Date']).dt.days
+            merged_df['Tanggal'] = pd.to_datetime(merged_df['Tanggal']).dt.date
+            merged_df['Delivery Date'] = pd.to_datetime(merged_df['Delivery Date']).dt.date
+            merged_df['Time Difference (hours)']=merged_df['Time Difference (days)']*daily_hours
+            if choose == "Yes" and all(col in merged_df.columns for col in ['MPG', 'SPG', 'SSPG']):
+                merged_df['component_id']=merged_df['Kereta']+'-'+merged_df['TS'].astype(str)+'-'+merged_df['MPG']+'-'+merged_df['SPG']+'-'+merged_df['SSPG']+'-'+merged_df['cluster_label']
+            else:
+                merged_df['component_id']=merged_df['Kereta']+'-'+merged_df['TS'].astype(str)+'-'+merged_df['cluster_label']
+            cols=['component_id']+merged_df.columns[:-1].tolist()
+            merged_df=merged_df[cols]
+            
+            merged_df['Time Difference (hours)'].dropna(inplace=True)
+            merged_df = merged_df[merged_df['Time Difference (hours)'] >= 0]
+            merged_df['Time Difference (days)'].dropna(inplace=True)
+            merged_df = merged_df[merged_df['Time Difference (days)'] >= 0]    
+            st.write(merged_df)
+            doc.add_paragraph("Data:")
+            # Add the dataframe as a table
+            table = doc.add_table(merged_df.shape[0] + 1, merged_df.shape[1])
+            table.style = 'Table Grid'  # Apply table grid style
+            # Add column names to the table
+            for i, column_name in enumerate(merged_df.columns):
+                table.cell(0, i).text = column_name
+            # Add data to the table
+            for i, row in enumerate(merged_df.itertuples()):
+                for j, value in enumerate(row[1:]):
+                    table.cell(i + 1, j).text = str(value)        
+            unique_klas = merged_df['component_id'].unique()
+            # Create DataFrames based on unique 'Klas' values
+            dfs = {}
+            for component_id in unique_klas:
+                if choose == "Yes" and all(col in merged_df.columns for col in ['MPG', 'SPG', 'SSPG']):
+                    df_klas = merged_df[merged_df['component_id'] == component_id][['TS', 'Tanggal', 'Kereta', 'Klasifikasi Gangguan', 'Nama Komponen', 'MPG', 'SPG', 'SSPG', 'cluster_label', 'Jumlah','Delivery Date','Time Difference (hours)','Time Difference (days)']].sort_values('Tanggal')
+                else:
+                    df_klas = merged_df[merged_df['component_id'] == component_id][['TS', 'Tanggal', 'Kereta', 'Klasifikasi Gangguan', 'Nama Komponen', 'cluster_label', 'Jumlah','Delivery Date','Time Difference (hours)','Time Difference (days)']].sort_values('Tanggal')
+                # Calculate Time To Failure (hours)
+                df_klas['Time To Failure (hours)'] = 0
+                df_klas['Tanggal'] = pd.to_datetime(df_klas['Tanggal']).dt.date
+                df_klas['Delivery Date'] = pd.to_datetime(df_klas['Delivery Date']).dt.date
+                df_klas.loc[df_klas.index[0], 'Time To Failure (hours)'] = (df_klas.loc[df_klas.index[0], 'Tanggal'] - df_klas.loc[df_klas.index[0], 'Delivery Date']).total_seconds() / 3600
+                for i in range(1, len(df_klas)):
+                    df_klas.loc[df_klas.index[i], 'Time To Failure (hours)'] = (df_klas.loc[df_klas.index[i], 'Tanggal'] - df_klas.loc[df_klas.index[i-1], 'Tanggal']).total_seconds() / 3600
+                # Convert 'Jumlah' and 'Time To Failure (hours)' columns to integer
+                df_klas['Jumlah'] = df_klas['Jumlah'].astype(int)
+                df_klas['Time To Failure (hours)'].dropna(inplace=True)
+                df_klas = df_klas[df_klas['Time To Failure (hours)'] > 0]
+                df_klas['Time To Failure (hours)'] = df_klas['Time To Failure (hours)'].astype(int)
+                dfs[f'{component_id}_df'] = df_klas
+            # Access the created DataFrames
+            for component_id, df_klas in dfs.items():
+                if choose == "Yes" and all(col in df_klas.columns for col in ['MPG', 'SPG', 'SSPG']):
+                    df_klas = df_klas[['TS', 'Tanggal', 'Kereta', 'Klasifikasi Gangguan', 'Nama Komponen', 'MPG', 'SPG', 'SSPG', 'cluster_label', 'Delivery Date', 'Time Difference (hours)', 'Time Difference (days)', 'Jumlah', 'Time To Failure (hours)']]
+                else:
+                    df_klas = df_klas[['TS', 'Tanggal', 'Kereta', 'Klasifikasi Gangguan', 'Nama Komponen','cluster_label', 'Delivery Date', 'Time Difference (hours)', 'Time Difference (days)', 'Jumlah', 'Time To Failure (hours)']]
+                train_number = df_klas['Kereta'].values[0]
+                ts = df_klas['TS'].values[0]
+                if choose == "Yes" and all(col in df_klas.columns for col in ['MPG', 'SPG', 'SSPG']):
+                    component_info = str(df_klas['MPG'].tolist()[0]) + '-' + str(df_klas['SPG'].tolist()[0]) + '-' + str(df_klas['SSPG'].tolist()[0]) + '-' + str(df_klas['cluster_label'].tolist()[0])
+                else:
+                    component_info = str(df_klas['cluster_label'].tolist()[0])
+                if len(df_klas)>=3:
+                    # Formatting the output
+                    Train = "Train Number: {} - TS {}".format(train_number, ts)
+                    Compo = "Component ID: {}".format(component_info)
+                    # Displaying the output
+                    st.subheader(Train)
+                    st.subheader(Compo)
+                    st.write("Information: Enough data to run test (available data {})".format(len(df_klas)))
+                    st.write(df_klas)
+                    doc.add_heading(Train, level=1)
+                    doc.add_heading(Compo, level=1)
+                    doc.add_heading("Information: Enough data to run test (available data {})".format(len(df_klas)))
+                    # Add the dataframe as a table
+                    table = doc.add_table(df_klas.shape[0] + 1, df_klas.shape[1])
+                    table.style = 'Table Grid'  # Apply table grid style
+                    # Add column names to the table
+                    for i, column_name in enumerate(df_klas.columns):
+                        table.cell(0, i).text = column_name
+                    # Add data to the table
+                    for i, row in enumerate(df_klas.itertuples()):
+                        for j, value in enumerate(row[1:]):
+                            table.cell(i + 1, j).text = str(value)
+                    test(df_klas, distribution,doc)
+                else:
+                    # Formatting the output
+                    Train = "Train Number: {} - TS {}".format(train_number, ts) 
+                    Compo = "Component ID: {}.".format( component_info)
+                    # Displaying the output
+                    st.subheader(Train)
+                    st.subheader(Compo)
+                    st.write("Information: Not Enough data to run test (minimum number of data: 3, available data {})".format(len(df_klas)))
+                    st.write(df_klas)
+                    doc.add_heading(Train, level=1)
+                    doc.add_heading(Compo, level=1)
+                    doc.add_paragraph("Information: Not Enough data to run test (minimum number of data: 3, available data {})".format(len(df_klas)))
+                    # Add the dataframe as a table
+                    table = doc.add_table(df_klas.shape[0] + 1, df_klas.shape[1])
+                    table.style = 'Table Grid'  # Apply table grid style
+                    # Add column names to the table
+                    for i, column_name in enumerate(df_klas.columns):
+                        table.cell(0, i).text = column_name
+                    # Add data to the table
+                    for i, row in enumerate(df_klas.itertuples()):
+                        for j, value in enumerate(row[1:]):
+                            table.cell(i + 1, j).text = str(value)
+            doc_bytes = io.BytesIO()
+            doc.save(doc_bytes)
+            doc_bytes.seek(0)
+            #-----TO EDIT CLUSTERED
+            st.download_button(
+                                label="Download report docx",
+                                data=doc_bytes.read(),
+                                file_name='report.docx')
+    
+def MTBF():
+    st.title("Clustering and MTBF Calculator App")
+    # File upload section
+    st.subheader("Upload your Gangguan XLSX file")
+    file = st.file_uploader("Upload XLSX file", type=["xlsx"])
+    if file is not None:
+        # Read the Excel file
+        df = pd.read_excel(file)
+        #get the table
+        if df.columns[0][:5]=="Unnam":
+            first_nonempty_row = df.index[df.notnull().any(axis=1)][0]
+            # Delete the empty rows
+            df = df.iloc[first_nonempty_row:]
+            # Reset the index
+            df.columns = df.iloc[0] 
+            df = df[1:].reset_index(drop=True)
+        # Find the first non-empty column index
+        first_nonempty_column = df.columns[df.notnull().any(axis=0)][0]
+        # Delete the empty columns
+        df = df.loc[:, first_nonempty_column:]
+        #strip string in dataframe
+        df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)
+        st.markdown("---")
+        st.subheader("Pick your data")
+        num_data = st.slider('How many of the data you are going to be used in clustering?', 0, len(df), 50)
+        df=df.head(num_data)
+        st.write(df)
+        choose=st.radio("Are you going to include MPG-SPG-SSPG as per BS EN 15380-2 standard?",('Yes','No'),key=1)
+        # Create a new DataFrame with unique values in 'Nama Komponen'
+        if choose=='Yes':
+            default=["TS", "Tanggal", "Kereta", "Klasifikasi Gangguan", "Nama Komponen", "Jumlah","MPG","SPG", "SSPG"]
+            PG=["MPG","SPG", "SSPG"]
+        else:
+            default=["TS", "Tanggal", "Kereta", "Klasifikasi Gangguan", "Nama Komponen", "Jumlah"]
+            PG=[]
+        options=st.multiselect("Select required columns", options=df.columns, default=default)
+        required_columns=options
+        df = df[required_columns]
+        df=df.drop_duplicates(subset=['Tanggal','TS','Kereta','Nama Komponen','Jumlah']+PG)
+        unique_count = df['Nama Komponen'].nunique()  # Get the number of unique values
+        st.write("Number of unique values in 'Nama Komponen':", unique_count)
+        #create df of combinations Kereta and TS
+        df_delivery = process_all_values(df, "Kereta")
+        df_delivery = pd.DataFrame({
+            'Trainset': df_delivery.apply(lambda row: f"{row['Kereta']} - {row['TS']}", axis=1),
+            'Delivery Date': [''] * len(df_delivery)
+        })
+        df_delivery = df_delivery.drop_duplicates(subset=['Trainset'])
+        df_delivery = df_delivery.rename(columns={'Trainset': 'Trainset', 'Delivery Date': 'Delivery Date'})
+        delivery_file= df_delivery.to_csv(index=False).encode('utf-8')   
+        dfx = process_df(df,"Kereta")
+        dfx=dfx.drop_duplicates(subset=['Tanggal','TS','Kereta','Nama Komponen','Jumlah']+PG)
+        if st.button('Cluster!'):
+            dfx['original komponen name'] = dfx['Nama Komponen']
+            # Apply text preprocessing
+            dfx['Nama Komponen'] = dfx['Nama Komponen'].apply(remove_whitespace)
+            dfx['Nama Komponen'] = dfx['Nama Komponen'].apply(remove_text_between_parentheses)
+            dfx['Nama Komponen'] = dfx['Nama Komponen'].apply(lambda x: x.lower() if isinstance(x, str) else x)
+            # Preprocess the text data
+            vectorizer = TfidfVectorizer(stop_words='english')
+            X = vectorizer.fit_transform(dfx['Nama Komponen'].values.astype('U'))
+            max_clusters = int(round(0.8 * dfx['Nama Komponen'].nunique(), 0))
+            best_score = -1
+            best_num_clusters = 0
+            for num_clusters in range(2, max_clusters + 1):
+                kmeans = MiniBatchKMeans(n_clusters=num_clusters, random_state=0)
+                cluster_labels = kmeans.fit_predict(X)
+                silhouette_avg = silhouette_score(X, cluster_labels, sample_size=1000)
+                if silhouette_avg > best_score:
+                    best_score = silhouette_avg
+                    best_num_clusters = num_clusters
+            st.subheader("Clustering result")        
+            st.write("Optimal number of clusters:", best_num_clusters)
+            # Apply K-means clustering with the optimal number of clusters
+            kmeans = KMeans(n_clusters=best_num_clusters, random_state=0)
+            kmeans.fit(X)
+            # Get the cluster labels
+            labels = kmeans.labels_
+            # Add the cluster labels as a column next to 'Nama Komponen'
+            dfx['cluster_label'] = labels
+            # Create a dictionary to store the first value in each cluster
+            cluster_first_values = {}
+            for cluster_label in set(labels):
+                cluster_values = dfx.loc[dfx['cluster_label'] == cluster_label, 'Nama Komponen']
+                first_value = cluster_values.iloc[0]
+                cluster_first_values[cluster_label] = first_value
+            # Update the 'cluster_label' column with the first value in each cluster
+            dfx['cluster_label'] = dfx['cluster_label'].map(cluster_first_values)
+            # Move the 'Jumlah' column to the rightmost position
+            columns = dfx.columns.tolist()
+            columns.remove('Jumlah')
+            columns.append('Jumlah')
+            dfx = dfx[columns]
+            st.write(dfx)
+            # Download button
+            csv_data = dfx.to_csv(index=False).encode('utf-8')
+            #-----TO EDIT CLUSTERED
+            st.download_button(
+                                label="We have clustered the component's name using Machine Learning, if you want to edit it, Click to download data as CSV then upload it again",
+                                data=csv_data,
+                                file_name='cluster.csv',
+                                mime='text/csv',)
+        st.markdown("---") 
+                # Provide a download button for the Excel file
+        st.subheader("Please click to download the delivery date csv file and fill in the delivery dates")
+        st.download_button(
+                            label="Download the delivery csv file template",
+                            data=delivery_file,
+                            file_name='delivery_template.csv',
+                            mime='text/csv',)
+        mtbf_clc(doc)
+    else:
+        st.markdown("---") 
+        st.subheader("Or if you already have filled delivery data and cluster data, upload to the following")
+        mtbf_clc(doc)
+
+
 
 page_names_to_funcs = {
     "Product Breakdown Structure": system_requirement,
@@ -733,6 +1396,7 @@ page_names_to_funcs = {
     "Function Breakdown Structure":FBS,
     "Standards finder":Standards,
     "Possible Supplier":Supplier,
+    "Component Clustering & MTBF Calculator":MTBF
     
     }
 

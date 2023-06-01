@@ -31,6 +31,17 @@ import matplotlib.gridspec as gridspec
 from docx import Document
 from docx.shared import Inches
 import warnings
+#dependencies for chat
+from dotenv import load_dotenv
+from PyPDF2 import PdfReader
+from langchain.text_splitter import CharacterTextSplitter
+from langchain.embeddings import OpenAIEmbeddings, HuggingFaceInstructEmbeddings
+from langchain.vectorstores import FAISS
+from langchain.chat_models import ChatOpenAI
+from langchain.memory import ConversationBufferMemory
+from langchain.chains import ConversationalRetrievalChain
+from htmlTemplates import css, bot_template, user_template
+from langchain.llms import HuggingFaceHub
 
 warnings.filterwarnings("ignore")
 #Create a word doc
@@ -1436,7 +1447,8 @@ def handle_userinput(user_question):
                 "{{MSG}}", message.content), unsafe_allow_html=True)
 
 def chat():
-    HUGGINGFACEHUB_API_TOKEN="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"
+    #HUGGINGFACEHUB_API_TOKEN="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"
+    load_dotenv()
     st.set_page_config(page_title="Chat with multiple PDFs",
                        page_icon=":books:")
     st.write(css, unsafe_allow_html=True)

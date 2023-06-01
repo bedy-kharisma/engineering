@@ -1461,7 +1461,6 @@ def chat():
         answer_context = answer_context.replace('\n', ' ')  # Remove line feeds
         answer_contexts.append(answer_context)
     joined_contexts = ' '.join(answer_contexts)
-
     prompt_node = PromptNode(model_name_or_path="google/flan-t5-base", use_gpu=True)
     prompt_text = "Consider you are a rolling stock consultant provided with this query: {query} provide answer from the following context: {contexts}. Answer:"
     output = prompt_node.prompt(prompt_template=prompt_text, query=query, contexts=joined_contexts)
@@ -1476,7 +1475,7 @@ page_names_to_funcs = {
     "Standards finder":Standards,
     "Possible Supplier":Supplier,
     "Component Clustering & MTBF Calculator":MTBF,
-    "Talk To Your Standards":chat
+    #"Talk To Your Standards":chat
     
     }
 

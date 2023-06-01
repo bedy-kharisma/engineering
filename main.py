@@ -1477,7 +1477,7 @@ page_names_to_funcs = {
     "Standards finder":Standards,
     "Possible Supplier":Supplier,
     "Component Clustering & MTBF Calculator":MTBF,
-    #"Talk To Your Standards":chat
+    "Talk To Your Standards":chat
     
     }
 

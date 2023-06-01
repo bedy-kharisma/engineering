@@ -1436,7 +1436,7 @@ def handle_userinput(user_question):
                 "{{MSG}}", message.content), unsafe_allow_html=True)
 
 def chat():
-    load_dotenv()
+    HUGGINGFACEHUB_API_TOKEN="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"
     st.set_page_config(page_title="Chat with multiple PDFs",
                        page_icon=":books:")
     st.write(css, unsafe_allow_html=True)

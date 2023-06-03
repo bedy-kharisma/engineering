@@ -265,7 +265,8 @@ def Standards():
 
         # Display the DataFrame
         gd=GridOptionsBuilder.from_dataframe(standards_df)
-        gd.configure_column("id", headerName="id", cellRenderer=markdown('''function(params) {return '<a href="https://drive.google.com/file/d/' + params.value + '/view" target="_blank">' + params.value + '</a>';}'''))
+        #gd.configure_column("id", headerName="id", cellRenderer=markdown('''function(params) {return '<a href="https://drive.google.com/file/d/' + params.value + '/view" target="_blank">' + params.value + '</a>';}'''))
+        gd.configure_column("id", headerName="id", cellRenderer=markdown('''function(params) { return '<a href="https://drive.google.com/file/d/' + params.value + '/view" target="_blank">' + params.value + '</a>'; }'''))
 
         #gd.configure_column("id", headerName="id", cellRenderer=markdown('''function(params) {return '<a href="https://drive.google.com/file/d/' + params.value + '/view" target="_blank">' + params.value + '</a>'}'''),
         #                width=300)

@@ -268,7 +268,7 @@ def Standards():
         gd.configure_column("id", headerName="id", cellRenderer=markdown('''function(params) {return '<a href="https://drive.google.com/file/d/' + params.value + '/view" target="_blank">' + params.value + '</a>';}'''))
 
         #gd.configure_column("id", headerName="id", cellRenderer=markdown('''function(params) {return '<a href="https://drive.google.com/file/d/' + params.value + '/view" target="_blank">' + params.value + '</a>'}'''),
-                        width=300)
+        #                width=300)
         gridoptions=gd.build()
 
         AgGrid(standards_df, gridOptions=gridoptions, allow_unsafe_jscode=True, height=500, theme='alpine')

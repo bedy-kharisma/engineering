@@ -34,14 +34,6 @@ from docx.shared import Inches
 import warnings
 #for chat
 
-from haystack.pipelines import Pipeline
-from haystack.nodes import TextConverter, PreProcessor
-from haystack.document_stores import FAISSDocumentStore, InMemoryDocumentStore
-from haystack.pipelines.standard_pipelines import TextIndexingPipeline
-from sentence_transformers import SentenceTransformer
-from haystack.nodes import EmbeddingRetriever, FARMReader
-from haystack.pipelines import ExtractiveQAPipeline
-from haystack.nodes import PromptNode, PromptTemplate
 
 warnings.filterwarnings("ignore")
 #Create a word doc
@@ -1395,77 +1387,7 @@ def MTBF():
         st.subheader("Or if you already have filled delivery data and cluster data, upload to the following")
         mtbf_clc(doc)
 
-def chat():
-    # Load the dataframe from a pickle file
-    df = pd.read_pickle('./standards.pkl')
-    df['num_chars'] = df['text'].apply(lambda x: len(x))
-    df = df[df['num_chars'] != 0]
-    df = df[['name', 'url', 'text']]
-    selected_columns = ['name', 'text']
-    df = df[selected_columns]
-    keyword = st.text_input("choose topic","running dynamic")
-
-    filtered_std = df[df['text'].str.contains(keyword, flags=re.IGNORECASE)]
-    # Create a folder to store the text files
-    folder = 'text_files'
-    doc_dir = 'text_files'
-    if not os.path.exists(folder):
-        os.mkdir(folder)
-    # Replace file extensions in file names
-    filtered_std['name'] = filtered_std['name'].str.replace('.pdf', '.txt')
-    # Loop through each row of the dataframe
-    for index, row in filtered_std.iterrows():
-        # Get the file name and text for this row
-        file_name = row['name']
-        text = row['text']
-        # Create a new text file with the given file name and write the text to it
-        file_path = os.path.join(folder, file_name)
-        with open(file_path, 'w', errors='ignore') as f:
-            f.write(text)
-    #defining pipeline
-    document_store = InMemoryDocumentStore()
-    indexing_pipeline = Pipeline()
-    text_converter = TextConverter()
-    preprocessor = PreProcessor(
-        clean_whitespace=True,
-        clean_header_footer=True,
-        clean_empty_lines=True,
-        split_by="word",
-        split_length=1000,
-        split_overlap=20,
-        split_respect_sentence_boundary=True,
-    )
-    indexing_pipeline.add_node(component=text_converter, name="TextConverter", inputs=["File"])
-    indexing_pipeline.add_node(component=preprocessor, name="PreProcessor", inputs=["TextConverter"])
-    indexing_pipeline.add_node(component=document_store, name="DocumentStore", inputs=["PreProcessor"])
-    #reads all related files
-    files_to_index = [doc_dir + "/" + f for f in os.listdir(doc_dir)]
-    indexing_pipeline.run_batch(file_paths=files_to_index)
-    retriever = EmbeddingRetriever(
-        document_store=document_store, embedding_model="sentence-transformers/multi-qa-mpnet-base-dot-v1"
-    )
-    document_store.update_embeddings(retriever)
-    #reader = FARMReader(model_name_or_path="bert-large-uncased-whole-word-masking-finetuned-squad", use_gpu=True)
-    
-    lfqa_prompt = PromptTemplate(
-                     name="lfqa",
-                     prompt_text="""Synthesize a comprehensive answer from the following text for the given question. 
-                                    Provide a clear and concise response that summarizes the key points and information presented in the text. 
-                                    Your answer should be in your own words and be no longer than 50 words. 
-                                    \n\n Related text: {join(documents)} \n\n Question: {query} \n\n Answer:""",
-                                )
-
-    prompt_node = PromptNode(model_name_or_path="google/flan-t5-large", default_prompt_template=lfqa_prompt)
-    
-
-    pipe = Pipeline()
-    pipe.add_node(component=retriever, name="retriever", inputs=["Query"])
-    pipe.add_node(component=prompt_node, name="prompt_node", inputs=["retriever"])
-    query=st.text_input("insert question", "at what speed does a vehicle must perform dynamic test?")
-    output = pipe.run(query=query)
-
-    st.write(output["results"])
-
+ 
 
 
 page_names_to_funcs = {

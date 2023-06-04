@@ -265,7 +265,7 @@ def Standards():
             st.write(f"{standards_df.shape[0]} number of standards found using keyword : {keyword}")
         # Display the DataFrame
         standards_df['link'] = standards_df['id'].apply(lambda x: f'[{x}](https://drive.google.com/file/d/{x}/view)')
-
+        app = Dash(__name__, external_stylesheets=[dbc.themes.CYBORG])
         columnDefs = [
             {
                 "headerName": "location",  # Name of table displayed in app

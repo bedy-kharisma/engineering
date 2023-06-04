@@ -1320,36 +1320,59 @@ def chat():
     keyword = st.text_input("Insert Topic", "running dynamic")
     user_question = st.text_input("Ask a question about your documents:")
     if st.button("Process"):
-        filtered_std = df[df['text'].str.contains(keyword, flags=re.IGNORECASE)]
-        column_values = filtered_std['text'].astype(str).values
-        context = ' '.join(column_values)
-        # Split the context into chunks
-        text_splitter = CharacterTextSplitter(
-            separator="\n",
-            chunk_size=10000,
-            chunk_overlap=200,
-            length_function=len
-        )
-        chunks = text_splitter.split_text(context)
-        # Make a request to the embeddings inference API endpoint
-        API_URL = "https://api-inference.huggingface.co/models/sentence-transformers/multi-qa-mpnet-base-dot-v1"
-        headers = {"Authorization": "Bearer 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"}
-        embeddings_api_response = requests.post(API_URL, headers=headers, json={'context': chunks.tolist()})
+        import streamlit as st
+import pandas as pd
+import re
+import requests
 
-        if embeddings_api_response.status_code == 200:
-            embeddings = embeddings_api_response.json()['embeddings']
-            # Make a request to the prompt inference API endpoint
-            API_URL_prompt = "https://api-inference.huggingface.co/models/google/flan-t5-base"
-            headers_prompt = {"Authorization": "Bearer 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"}
-            prompt_api_response = requests.post(API_URL_prompt, headers=headers_prompt, json={'question': user_question, 'context': context, 'embeddings': embeddings})
+st.empty()
 
-            if prompt_api_response.status_code == 200:
-                output = prompt_api_response.json()['answer']
-                st.write(output)
-            else:
-                st.write("Error occurred while retrieving the prompt answer.")
+# Load the dataframe from a pickle file
+df = pd.read_pickle('./standards.pkl')
+df['num_chars'] = df['text'].apply(lambda x: len(x))
+df = df[df['num_chars'] != 0]
+df = df[['name', 'url', 'text']]
+selected_columns = ['name', 'text']
+df = df[selected_columns]
+
+keyword = st.text_input("Insert Topic", "running dynamic")
+user_question = st.text_input("Ask a question about your documents:")
+
+if st.button("Process"):
+    filtered_std = df[df['text'].str.contains(keyword, flags=re.IGNORECASE)]
+    column_values = filtered_std['text'].astype(str).values
+    context = ' '.join(column_values)
+    
+    # Split the context into chunks
+    text_splitter = CharacterTextSplitter(
+        separator="\n",
+        chunk_size=10000,
+        chunk_overlap=200,
+        length_function=len
+    )
+    chunks = text_splitter.split_text(context)
+
+    # Make a request to the embeddings inference API endpoint
+    API_URL = "https://api-inference.huggingface.co/models/sentence-transformers/multi-qa-mpnet-base-dot-v1"
+    headers = {"Authorization": "Bearer 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"}
+    embeddings_api_response = requests.post(API_URL, headers=headers, json={'context': chunks})
+
+    if embeddings_api_response.status_code == 200:
+        embeddings = embeddings_api_response.json()['embeddings']
+        
+        # Make a request to the prompt inference API endpoint
+        API_URL_prompt = "https://api-inference.huggingface.co/models/google/flan-t5-base"
+        headers_prompt = {"Authorization": "Bearer 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"}
+        prompt_api_response = requests.post(API_URL_prompt, headers=headers_prompt, json={'question': user_question, 'context': context, 'embeddings': embeddings})
+
+        if prompt_api_response.status_code == 200:
+            output = prompt_api_response.json()['answer']
+            st.write(output)
         else:
-            st.write("Error occurred while retrieving the embeddings.")
+            st.write("Error occurred while retrieving the prompt answer.")
+    else:
+        st.write("Error occurred while retrieving the embeddings.")
+
         
 
 

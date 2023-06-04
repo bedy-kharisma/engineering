@@ -1324,7 +1324,7 @@ def chat():
     context = ' '.join(column_values)
     text_splitter = CharacterTextSplitter(
         separator="\n",
-        chunk_size=1000,
+        chunk_size=10000,
         chunk_overlap=200,
         length_function=len
     )

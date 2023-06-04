@@ -1334,7 +1334,7 @@ def chat():
         # Make a request to the embeddings inference API endpoint
         API_URL = "https://api-inference.huggingface.co/models/sentence-transformers/multi-qa-mpnet-base-dot-v1"
         headers = {"Authorization": "Bearer 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"}
-        embeddings_api_response = requests.post(PI_URL, headers=headers, json={'context': chunks.tolist()})
+        embeddings_api_response = requests.post(API_URL, headers=headers, json={'context': chunks.tolist()})
 
         if embeddings_api_response.status_code == 200:
             embeddings = embeddings_api_response.json()['embeddings']

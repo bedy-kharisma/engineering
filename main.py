@@ -233,7 +233,7 @@ def Standards():
         standards = pd.read_pickle(content)
         keyword = st.text_input('Pilih keyword yang ingin Anda cari')
         #filter
-        filtered_std = standards[standards['text'].str.contains(keyword, case=False))]
+        filtered_std = standards[standards['text'].str.contains(keyword, case=False)]
         standards_df=filtered_std[["location","name","id"]]
         if keyword!="":
             st.write(f"{standards_df.shape[0]} number of standards found using keyword : {keyword}")

@@ -36,7 +36,7 @@ from docx import Document
 from docx.shared import Inches
 import warnings
 #for chat
-from haystack import Pipeline
+from haystack.pipelines import Pipeline
 from haystack.nodes import TextConverter, PreProcessor
 from haystack.document_stores import FAISSDocumentStore, InMemoryDocumentStore
 from haystack.pipelines.standard_pipelines import TextIndexingPipeline

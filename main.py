@@ -44,7 +44,6 @@ from langchain.vectorstores import FAISS
 from langchain.chat_models import ChatOpenAI
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationalRetrievalChain
-from htmlTemplates import css, bot_template, user_template
 from langchain.llms import HuggingFaceHub
 
 warnings.filterwarnings("ignore")
@@ -1319,27 +1318,25 @@ def chat():
     selected_columns = ['name', 'text']
     df = df[selected_columns]
     keyword = st.text_input("Insert Topic", "running dynamic")
-    filtered_std = df[df['text'].str.contains(keyword, flags=re.IGNORECASE)]
-    column_values = filtered_std['text'].astype(str).values
-    context = ' '.join(column_values)
-    text_splitter = CharacterTextSplitter(
-        separator="\n",
-        chunk_size=10000,
-        chunk_overlap=200,
-        length_function=len
-    )
-    chunks = text_splitter.split_text(context)
-    embeddings = HuggingFaceInstructEmbeddings(model_name="hkunlp/instructor-xl")
-    vectorstore = FAISS.from_texts(texts=chunks, embedding=embeddings)
-    llm = HuggingFaceHub(repo_id="google/flan-t5-xxl", model_kwargs={"temperature":0.5, "max_length":512})
-    memory = ConversationBufferMemory(
-        memory_key='chat_history', return_messages=True)
-    conversation_chain = ConversationalRetrievalChain.from_llm(
-        llm=llm,
-        retriever=vectorstore.as_retriever(),
-        memory=memory
-    )
-    st.write(conversation_chain) 
+    user_question = st.text_input("Ask a question about your documents:")
+    if st.button("Process"):
+        filtered_std = df[df['text'].str.contains(keyword, flags=re.IGNORECASE)]
+        column_values = filtered_std['text'].astype(str).values
+        context = ' '.join(column_values)
+        text_splitter = CharacterTextSplitter(
+            separator="\n",
+            chunk_size=10000,
+            chunk_overlap=200,
+            length_function=len
+        )
+        chunks = text_splitter.split_text(context)
+        embeddings = HuggingFaceInstructEmbeddings(model_name="hkunlp/instructor-xl")
+        vectorstore = FAISS.from_texts(texts=chunks, embedding=embeddings)
+        prompt_node = PromptNode(model_name_or_path="google/flan-t5-base", use_gpu=True)
+        prompt_text = "Consider you are a rolling stock consultant provided with this query: {query} provide answer from the following context: {contexts}. Answer:"
+        output = prompt_node.prompt(prompt_template=prompt_text, query=user_question, contexts=chunks)
+        st.write(output[0])
+
 page_names_to_funcs = {
     "Product Breakdown Structure": system_requirement,
     "Material Code":Matcod,

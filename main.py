@@ -237,8 +237,9 @@ def Standards():
         standards_df=filtered_std[["location","name","id"]]
         if keyword!="":
             st.write(f"{standards_df.shape[0]} number of standards found using keyword : {keyword}")
-        # Display the DataFrame
-        st.write(standards_df)
+        df['link'] = df['id'].apply(lambda x: f'<a target="_blank" href="https://drive.google.com/file/d/{x}/view">{x}</a>').to_html(escape=False)
+        st.write(standards_df, unsafe_allow_html=True)
+
         
 def FMECA():
     st.empty()

@@ -1350,10 +1350,10 @@ def chat():
                 st.write(output)
             else:
                 st.write(f"Error occurred while retrieving the prompt answer. Status: {prompt_api_response.status_code}")
-    else:
-        st.write(f"Error occurred while retrieving the embeddings. Status: {embeddings_api_response.status_code}")
+        else:
+            st.write(f"Error occurred while retrieving the embeddings. Status: {embeddings_api_response.status_code}")
 
-        
+
 
 
 page_names_to_funcs = {

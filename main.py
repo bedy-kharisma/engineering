@@ -1213,7 +1213,7 @@ def mtbf_clc(doc):
                 merged_df['component_id']=merged_df['Kereta']+'-'+merged_df['TS'].astype(str)+'-'+merged_df['MPG']+'-'+merged_df['SPG']+'-'+merged_df['SSPG']+'-'+merged_df['cluster_label']
             elif choose == "Train Number + TS + Cluster" and all(col in merged_df.columns for col in ['Kereta', 'TS' ]):
                 merged_df['component_id']=merged_df['Kereta']+'-'+merged_df['TS'].astype(str)+'-'+merged_df['cluster_label']
-            elseL:
+            else:
                 merged_df['component_id']=merged_df['cluster_label']           
             cols=['component_id']+merged_df.columns[:-1].tolist()
             merged_df=merged_df[cols]        

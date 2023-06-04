@@ -266,46 +266,14 @@ def Standards():
         # Display the DataFrame
         standards_df['link'] = standards_df['id'].apply(lambda x: f'[{x}](https://drive.google.com/file/d/{x}/view)')
         app = Dash(__name__, external_stylesheets=[dbc.themes.CYBORG])
-        columnDefs = [
-            {
-                "headerName": "location",  # Name of table displayed in app
-                "field": "location",       # ID of table (needs to be the same as excel sheet column name)
-            },
-            {
-                "headerName": "name",
-                "field": "name",
-            },
-            {
-                "headerName": "link",
-                "field": "link",
-                "cellRenderer": "markdown"  # needed for inserting link
-            },
-        ]
-
-        defaultColDef = {
-            "filter": True,
-            "floatingFilter": True,
-            "resizable": True,
-            "sortable": True,
-            "editable": True,
-            "minWidth": 125,
-        }
-
-
-        table = dag.AgGrid(
-            id="Standards",
-            className="ag-theme-alpine-dark",
-            columnDefs=columnDefs,
-            rowData=standards_df.to_dict('records'),
-            columnSize="sizeToFit",
-            defaultColDef=defaultColDef,
-            dashGridOptions={"undoRedoCellEditing": True, "rowSelection":"multiple"},
+        columnDefs = [{"headerName": "location","field": "location"},{"headerName": "name","field": "name"},{"headerName":"link","field": "link","cellRenderer": "markdown"}]
+        defaultColDef = {"filter": True,"floatingFilter": True,"resizable": True,"sortable": True,"editable": True,"minWidth": 125}
+        table = dag.AgGrid(id="Standards",className="ag-theme-alpine-dark",columnDefs=columnDefs,rowData=standards_df.to_dict('records'),
+            columnSize="sizeToFit",defaultColDef=defaultColDef,dashGridOptions={"undoRedoCellEditing": True, "rowSelection":"multiple"},
         )
-
-
         app.layout = dbc.Container(
             [
-                html.Div("AG Grid: Icons, Dropdown, Link", className="h3 p-2 text-white bg-secondary"),
+                html.Div("Standards", className="h3 p-2 text-white bg-secondary"),
                 dbc.Row(
                     [
                         dbc.Col(

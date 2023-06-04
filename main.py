@@ -36,14 +36,16 @@ from docx import Document
 from docx.shared import Inches
 import warnings
 #for chat
-from haystack.pipelines import Pipeline
-from haystack.nodes import TextConverter, PreProcessor
-from haystack.document_stores import FAISSDocumentStore, InMemoryDocumentStore
-from haystack.pipelines.standard_pipelines import TextIndexingPipeline
-from sentence_transformers import SentenceTransformer
-from haystack.nodes import EmbeddingRetriever, FARMReader
-from haystack.pipelines import ExtractiveQAPipeline
-from haystack.nodes import PromptNode, PromptTemplate
+from dotenv import load_dotenv
+from PyPDF2 import PdfReader
+from langchain.text_splitter import CharacterTextSplitter
+from langchain.embeddings import OpenAIEmbeddings, HuggingFaceInstructEmbeddings
+from langchain.vectorstores import FAISS
+from langchain.chat_models import ChatOpenAI
+from langchain.memory import ConversationBufferMemory
+from langchain.chains import ConversationalRetrievalChain
+from htmlTemplates import css, bot_template, user_template
+from langchain.llms import HuggingFaceHub
 
 warnings.filterwarnings("ignore")
 #Create a word doc
@@ -1307,6 +1309,7 @@ def MTBF():
         mtbf_clc(doc)
         
 def chat():
+    load_dotenv()
     st.empty()
     # Load the dataframe from a pickle file
     df = pd.read_pickle('./standards.pkl')
@@ -1317,75 +1320,26 @@ def chat():
     df = df[selected_columns]
     keyword = st.text_input("Insert Topic", "running dynamic")
     filtered_std = df[df['text'].str.contains(keyword, flags=re.IGNORECASE)]
-    # Create a folder to store the text files
-    folder = 'text_files'
-    doc_dir = 'text_files'
-    if not os.path.exists(folder):
-        os.mkdir(folder)
-    # Replace file extensions in file names
-    filtered_std['name'] = filtered_std['name'].str.replace('.pdf', '.txt')
-    # Loop through each row of the dataframe
-    for index, row in filtered_std.iterrows():
-        # Get the file name and text for this row
-        file_name = row['name']
-        text = row['text']
-        # Create a new text file with the given file name and write the text to it
-        file_path = os.path.join(folder, file_name)
-        with open(file_path, 'w', errors='ignore') as f:
-            f.write(text)
-    #defining pipeline
-    document_store = InMemoryDocumentStore()
-    indexing_pipeline = Pipeline()
-    text_converter = TextConverter()
-    preprocessor = PreProcessor(
-        clean_whitespace=True,
-        clean_header_footer=True,
-        clean_empty_lines=True,
-        split_by="word",
-        split_length=1000,
-        split_overlap=20,
-        split_respect_sentence_boundary=True,
+    column_values = filtered_std['text'].astype(str).values
+    context = ' '.join(column_values)
+    text_splitter = CharacterTextSplitter(
+        separator="\n",
+        chunk_size=1000,
+        chunk_overlap=200,
+        length_function=len
     )
-    indexing_pipeline.add_node(component=text_converter, name="TextConverter", inputs=["File"])
-    indexing_pipeline.add_node(component=preprocessor, name="PreProcessor", inputs=["TextConverter"])
-    indexing_pipeline.add_node(component=document_store, name="DocumentStore", inputs=["PreProcessor"])
-    #reads all related files
-    files_to_index = [doc_dir + "/" + f for f in os.listdir(doc_dir)]
-    indexing_pipeline.run_batch(file_paths=files_to_index)
-    retriever = EmbeddingRetriever(
-                   document_store=document_store,
-                   batch_size=8,
-                   embedding_model="sentence-transformers/multi-qa-mpnet-base-dot-v1",
-                   api_key="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",
-                   max_seq_len=1536
+    chunks = text_splitter.split_text(text)
+    embeddings = HuggingFaceInstructEmbeddings(model_name="hkunlp/instructor-xl")
+    vectorstore = FAISS.from_texts(texts=chunks, embedding=embeddings)
+    llm = HuggingFaceHub(repo_id="google/flan-t5-xxl", model_kwargs={"temperature":0.5, "max_length":512})
+    memory = ConversationBufferMemory(
+        memory_key='chat_history', return_messages=True)
+    conversation_chain = ConversationalRetrievalChain.from_llm(
+        llm=llm,
+        retriever=vectorstore.as_retriever(),
+        memory=memory
     )
-    #retriever = EmbeddingRetriever(
-    #    document_store=document_store, embedding_model="sentence-transformers/multi-qa-mpnet-base-dot-v1"
-    #)
-    document_store.update_embeddings(retriever)
-    pipe = ExtractiveQAPipeline(retriever)
-    #QnA
-    k = st.slider('How many data would you retrieve?', 0, 20, 15)
-    query = st.text_input("Insert query","vehicle at what speed that must perform dynamic performance test?")
-    prediction = pipe.run(
-        query=query,
-        params={
-            "Retriever": {"top_k": k},
-        }
-    )
-    answer_contexts = []
-    for i in range(k):
-        answer_context = prediction['answers'][i].context
-        answer_context = answer_context.replace('\n', ' ')  # Remove line feeds
-        answer_contexts.append(answer_context)
-    joined_contexts = ' '.join(answer_contexts)
-    model_name = "OpenAssistant/oasst-sft-1-pythia-12b"
-    prompt_node = PromptNode("google/flan-t5-base", api_key=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, max_length=256, use_gpu=True)
-    #prompt_node = PromptNode(model_name_or_path="google/flan-t5-base", use_gpu=True)
-    prompt_text = "Consider you are a rolling stock consultant provided with this query: {query} provide answer from the following context: {contexts}. Answer:"
-    output = prompt_node.prompt(prompt_template=prompt_text, query=query, contexts=joined_contexts)
-    st.write(output[0])
-    
+    st.write(conversation_chain) 
 page_names_to_funcs = {
     "Product Breakdown Structure": system_requirement,
     "Material Code":Matcod,

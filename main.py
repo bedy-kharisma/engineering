@@ -599,7 +599,7 @@ def Matcod():
                     st.success('New Material Code has been generated, Contact your EIM to verify it')
         else:
             st.write('Please enter a numeric value only & make sure the length is <= 12 characters')
-     with tab2:
+    with tab2:
         password=st.text_input("Insert admin password","",type="password")
         if password == "admin":
             funct=st.radio(label="Functions:", options=['Edit','Delete'])

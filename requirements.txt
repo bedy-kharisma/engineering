@@ -8,6 +8,8 @@ PyGithub==1.58.0
 gspread==5.7.2
 oauth2client==4.1.3
 altair<5
+dash-ag-grid==2.0.0a5
+dash-bootstrap-components
 
 #mtbf+cluster requirements
 scikit-learn==1.2.2

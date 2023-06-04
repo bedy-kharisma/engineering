@@ -67,7 +67,6 @@ def xlookup(lookup_value, lookup_array, return_array, if_not_found:str = ''):
     match_value = return_array.loc[lookup_array == lookup_value]
     if match_value.empty:
         return f'"{lookup_value}" not found!' if if_not_found == '' else if_not_found
-
     else:
         return match_value.tolist()[0]
 
@@ -1212,7 +1211,7 @@ def mtbf_clc(doc):
             merged_df['Time Difference (hours)']=merged_df['Time Difference (days)']*daily_hours
             if choose == "MPG SPG SSPG (BS EN 15380-2) + Train NUmber + TS + Cluster" and all(col in merged_df.columns for col in ['MPG', 'SPG', 'SSPG']):
                 merged_df['component_id']=merged_df['Kereta']+'-'+merged_df['TS'].astype(str)+'-'+merged_df['MPG']+'-'+merged_df['SPG']+'-'+merged_df['SSPG']+'-'+merged_df['cluster_label']
-            else if choose == "Train Number + TS + Cluster" and all(col in merged_df.columns for col in ['Kereta', 'TS' ]):
+            elif choose == "Train Number + TS + Cluster" and all(col in merged_df.columns for col in ['Kereta', 'TS' ]):
                 merged_df['component_id']=merged_df['Kereta']+'-'+merged_df['TS'].astype(str)+'-'+merged_df['cluster_label']
             elseL:
                 merged_df['component_id']=merged_df['cluster_label']           

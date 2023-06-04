@@ -1323,18 +1323,33 @@ def chat():
         filtered_std = df[df['text'].str.contains(keyword, flags=re.IGNORECASE)]
         column_values = filtered_std['text'].astype(str).values
         context = ' '.join(column_values)
-        prompt_text = f"Consider you are a rolling stock consultant provided with this query: {user_question} provide answer from the following context: {context}. Answer:"
-        import requests
+        # Split the context into chunks
+        text_splitter = CharacterTextSplitter(
+            separator="\n",
+            chunk_size=10000,
+            chunk_overlap=200,
+            length_function=len
+        )
+        chunks = text_splitter.split_text(context)
+        # Make a request to the embeddings inference API endpoint
         API_URL = "https://api-inference.huggingface.co/models/sentence-transformers/multi-qa-mpnet-base-dot-v1"
         headers = {"Authorization": "Bearer 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"}
-        # Make a request to the inference API endpoint
-        response = requests.post(API_URL, headers=headers, json={'prompt': prompt_text})
+        embeddings_api_response = requests.post(PI_URL, headers=headers, json={'context': chunks.tolist()})
 
-        if response.status_code == 200:
-            output = response.json()
-            st.write(output['answer'])
+        if embeddings_api_response.status_code == 200:
+            embeddings = embeddings_api_response.json()['embeddings']
+            # Make a request to the prompt inference API endpoint
+            API_URL_prompt = "https://api-inference.huggingface.co/models/google/flan-t5-base"
+            headers_prompt = {"Authorization": "Bearer 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"}
+            prompt_api_response = requests.post(API_URL_prompt, headers=headers_prompt, json={'question': user_question, 'context': context, 'embeddings': embeddings})
+
+            if prompt_api_response.status_code == 200:
+                output = prompt_api_response.json()['answer']
+                st.write(output)
+            else:
+                st.write("Error occurred while retrieving the prompt answer.")
         else:
-            st.write("Error occurred while retrieving the answer.")
+            st.write("Error occurred while retrieving the embeddings.")
         
 
 

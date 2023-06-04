@@ -3,6 +3,9 @@ import streamlit as st
 from st_aggrid import AgGrid
 from st_aggrid import JsCode, GridUpdateMode, DataReturnMode
 from st_aggrid.grid_options_builder import GridOptionsBuilder
+import dash_ag_grid as dag              
+from dash import Dash, html, dcc, Input, Output, State, no_update
+import dash_bootstrap_components as dbc
 import  openpyxl
 import pandas as pd
 from streamlit import caching
@@ -254,7 +257,6 @@ def Standards():
     response = requests.get(file_url)
     if response.status_code == 200:
         content = BytesIO(response.content)
-   
         standards = pd.read_pickle(content)
         keyword = st.text_input('Pilih keyword yang ingin Anda cari')
         #filter
@@ -262,18 +264,61 @@ def Standards():
         standards_df=filtered_std[["location","name","id"]]
         if keyword!="":
             st.write(f"{standards_df.shape[0]} number of standards found using keyword : {keyword}")
-
         # Display the DataFrame
-        gd=GridOptionsBuilder.from_dataframe(standards_df)
-        #gd.configure_column("id", headerName="id", cellRenderer=markdown('''function(params) {return '<a href="https://drive.google.com/file/d/' + params.value + '/view" target="_blank">' + params.value + '</a>';}'''))
-        #gd.configure_column("id", headerName="id", cellRenderer=markdown('''function(params) { return '<a href="https://drive.google.com/file/d/' + params.value + '/view" target="_blank">' + params.value + '</a>'; }'''))
-        gd.configure_column("id", headerName="id", cellRenderer=markdown(f'[{link}](https://www.google.com/)')
+        standards_df['link'] = standards_df['id'].apply(lambda x: f'[{x}](https://drive.google.com/file/d/{x}/view)')
 
-        #gd.configure_column("id", headerName="id", cellRenderer=markdown('''function(params) {return '<a href="https://drive.google.com/file/d/' + params.value + '/view" target="_blank">' + params.value + '</a>'}'''),
-        #                width=300)
-        gridoptions=gd.build()
+        columnDefs = [
+            {
+                "headerName": "location",  # Name of table displayed in app
+                "field": "location",       # ID of table (needs to be the same as excel sheet column name)
+            },
+            {
+                "headerName": "name",
+                "field": "name",
+            },
+            {
+                "headerName": "link",
+                "field": "link",
+                "cellRenderer": "markdown"  # needed for inserting link
+            },
+        ]
 
-        AgGrid(standards_df, gridOptions=gridoptions, allow_unsafe_jscode=True, height=500, theme='alpine')
+        defaultColDef = {
+            "filter": True,
+            "floatingFilter": True,
+            "resizable": True,
+            "sortable": True,
+            "editable": True,
+            "minWidth": 125,
+        }
+
+
+        table = dag.AgGrid(
+            id="Standards",
+            className="ag-theme-alpine-dark",
+            columnDefs=columnDefs,
+            rowData=standards_df.to_dict('records'),
+            columnSize="sizeToFit",
+            defaultColDef=defaultColDef,
+            dashGridOptions={"undoRedoCellEditing": True, "rowSelection":"multiple"},
+        )
+
+
+        app.layout = dbc.Container(
+            [
+                html.Div("AG Grid: Icons, Dropdown, Link", className="h3 p-2 text-white bg-secondary"),
+                dbc.Row(
+                    [
+                        dbc.Col(
+                            [
+                                table
+                            ], width={"size": 10, "offset": 1},
+                        ),
+                    ],
+                ),
+            ],
+        )
+        
 
 def FMECA():
     st.empty()
@@ -1121,7 +1166,7 @@ def process_df(df, column):
 
 def mtbf_clc(doc):
     doc.add_heading("MTBF Calculation",level=1)
-    choose=st.radio("Are you going to include MPG-SPG-SSPG as per BS EN 15380-2 standard?",('Yes','No'),key=2)
+    choose=st.radio("How are you going to define unique componeny id?",('MPG SPG SSPG (BS EN 15380-2) + Train NUmber + TS + Cluster','Train Number + TS + Cluster','Cluster'),key=2)
     uploaded_file = st.file_uploader("Upload Filled delivery dates file, make sure you are using MM/DD/YYYY date format", type=["csv","xlsx"])
     updated_file = st.file_uploader("Upload Updated Cluster csv file", type=["csv","xlsx"])
     # Allow the user to upload the filled Excel sheet
@@ -1165,13 +1210,14 @@ def mtbf_clc(doc):
             merged_df['Tanggal'] = pd.to_datetime(merged_df['Tanggal']).dt.date
             merged_df['Delivery Date'] = pd.to_datetime(merged_df['Delivery Date']).dt.date
             merged_df['Time Difference (hours)']=merged_df['Time Difference (days)']*daily_hours
-            if choose == "Yes" and all(col in merged_df.columns for col in ['MPG', 'SPG', 'SSPG']):
+            if choose == "MPG SPG SSPG (BS EN 15380-2) + Train NUmber + TS + Cluster" and all(col in merged_df.columns for col in ['MPG', 'SPG', 'SSPG']):
                 merged_df['component_id']=merged_df['Kereta']+'-'+merged_df['TS'].astype(str)+'-'+merged_df['MPG']+'-'+merged_df['SPG']+'-'+merged_df['SSPG']+'-'+merged_df['cluster_label']
-            else:
+            else if choose == "Train Number + TS + Cluster" and all(col in merged_df.columns for col in ['Kereta', 'TS' ]):
                 merged_df['component_id']=merged_df['Kereta']+'-'+merged_df['TS'].astype(str)+'-'+merged_df['cluster_label']
+            elseL:
+                merged_df['component_id']=merged_df['cluster_label']           
             cols=['component_id']+merged_df.columns[:-1].tolist()
-            merged_df=merged_df[cols]
-            
+            merged_df=merged_df[cols]        
             merged_df['Time Difference (hours)'].dropna(inplace=True)
             merged_df = merged_df[merged_df['Time Difference (hours)'] >= 0]
             merged_df['Time Difference (days)'].dropna(inplace=True)
@@ -1192,9 +1238,9 @@ def mtbf_clc(doc):
             # Create DataFrames based on unique 'Klas' values
             dfs = {}
             for component_id in unique_klas:
-                if choose == "Yes" and all(col in merged_df.columns for col in ['MPG', 'SPG', 'SSPG']):
-                    df_klas = merged_df[merged_df['component_id'] == component_id][['TS', 'Tanggal', 'Kereta', 'Klasifikasi Gangguan', 'Nama Komponen', 'MPG', 'SPG', 'SSPG', 'cluster_label', 'Jumlah','Delivery Date','Time Difference (hours)','Time Difference (days)']].sort_values('Tanggal')
-                else:
+                if choose == "MPG SPG SSPG (BS EN 15380-2) + Train NUmber + TS + Cluster" and all(col in merged_df.columns for col in ['MPG', 'SPG', 'SSPG']):
+                     df_klas = merged_df[merged_df['component_id'] == component_id][['TS', 'Tanggal', 'Kereta', 'Klasifikasi Gangguan', 'Nama Komponen', 'MPG', 'SPG', 'SSPG', 'cluster_label', 'Jumlah','Delivery Date','Time Difference (hours)','Time Difference (days)']].sort_values('Tanggal')
+                else: 
                     df_klas = merged_df[merged_df['component_id'] == component_id][['TS', 'Tanggal', 'Kereta', 'Klasifikasi Gangguan', 'Nama Komponen', 'cluster_label', 'Jumlah','Delivery Date','Time Difference (hours)','Time Difference (days)']].sort_values('Tanggal')
                 # Calculate Time To Failure (hours)
                 df_klas['Time To Failure (hours)'] = 0
@@ -1211,13 +1257,13 @@ def mtbf_clc(doc):
                 dfs[f'{component_id}_df'] = df_klas
             # Access the created DataFrames
             for component_id, df_klas in dfs.items():
-                if choose == "Yes" and all(col in df_klas.columns for col in ['MPG', 'SPG', 'SSPG']):
+                if choose == "MPG SPG SSPG (BS EN 15380-2) + Train NUmber + TS + Cluster" and all(col in merged_df.columns for col in ['MPG', 'SPG', 'SSPG']):
                     df_klas = df_klas[['TS', 'Tanggal', 'Kereta', 'Klasifikasi Gangguan', 'Nama Komponen', 'MPG', 'SPG', 'SSPG', 'cluster_label', 'Delivery Date', 'Time Difference (hours)', 'Time Difference (days)', 'Jumlah', 'Time To Failure (hours)']]
                 else:
                     df_klas = df_klas[['TS', 'Tanggal', 'Kereta', 'Klasifikasi Gangguan', 'Nama Komponen','cluster_label', 'Delivery Date', 'Time Difference (hours)', 'Time Difference (days)', 'Jumlah', 'Time To Failure (hours)']]
                 train_number = df_klas['Kereta'].values[0]
                 ts = df_klas['TS'].values[0]
-                if choose == "Yes" and all(col in df_klas.columns for col in ['MPG', 'SPG', 'SSPG']):
+                if choose == "MPG SPG SSPG (BS EN 15380-2) + Train NUmber + TS + Cluster" and all(col in merged_df.columns for col in ['MPG', 'SPG', 'SSPG']):
                     component_info = str(df_klas['MPG'].tolist()[0]) + '-' + str(df_klas['SPG'].tolist()[0]) + '-' + str(df_klas['SSPG'].tolist()[0]) + '-' + str(df_klas['cluster_label'].tolist()[0])
                 else:
                     component_info = str(df_klas['cluster_label'].tolist()[0])
@@ -1302,9 +1348,9 @@ def MTBF():
         num_data = st.slider('How many of the data you are going to be used in clustering?', 0, len(df), 50)
         df=df.head(num_data)
         st.write(df)
-        choose=st.radio("Are you going to include MPG-SPG-SSPG as per BS EN 15380-2 standard?",('Yes','No'),key=1)
+        choose=st.radio("How are you going to define unique componeny id?",('MPG SPG SSPG (BS EN 15380-2) + Train NUmber + TS + Cluster','Train Number + TS + Cluster','Cluster'),key=1)
         # Create a new DataFrame with unique values in 'Nama Komponen'
-        if choose=='Yes':
+        if choose == "MPG SPG SSPG (BS EN 15380-2) + Train NUmber + TS + Cluster" and all(col in merged_df.columns for col in ['MPG', 'SPG', 'SSPG']):
             default=["TS", "Tanggal", "Kereta", "Klasifikasi Gangguan", "Nama Komponen", "Jumlah","MPG","SPG", "SSPG"]
             PG=["MPG","SPG", "SSPG"]
         else:
@@ -1390,10 +1436,7 @@ def MTBF():
         st.markdown("---") 
         st.subheader("Or if you already have filled delivery data and cluster data, upload to the following")
         mtbf_clc(doc)
-
- 
-
-
+                            
 page_names_to_funcs = {
     "Product Breakdown Structure": system_requirement,
     "Material Code":Matcod,

@@ -77,27 +77,20 @@ def filter_dataframe(df: pd.DataFrame) -> pd.DataFrame:
     tot_url=(f"https://docs.google.com/spreadsheets/d/{types_of_train}/export?format=csv")
     #create dataframe from csv
     tot_df=pd.read_csv(tot_url)
-
     #get unique Type of Train
     unq_tot=tot_df['Type of Train'].unique()
-
     # Define select_tot as the selected value from selectbox
     select_tot = st.selectbox('Pilih Jenis Kereta',unq_tot)
-
     #filter df based on type of train selection single selectbox
     filtered_tot = tot_df[tot_df['Type of Train'] == select_tot]
     #get unique level1 based on filtered tot df
     unq_filtered_tot=filtered_tot['MPG name'].unique()
-
     df = df.copy()
     to_filter_columns = st.multiselect("Main Product group apa sajakah yang akan Anda gunakan", unq_filtered_tot,unq_filtered_tot,key=1)
-
     modification_container = st.container()
     with modification_container:
-
         level2 = []
-        level3 = []
-        
+        level3 = [] 
         for i in to_filter_columns: 
             left, right = st.columns((1, 20))
             left.write("↳")
@@ -111,7 +104,6 @@ def filter_dataframe(df: pd.DataFrame) -> pd.DataFrame:
                 for j in user_lvl2_input: 
                     left, right = st.columns((3, 20))
                     left.write("↳↳")
-
                     user_lvl3_input = right.multiselect(
                         f"Choose Sub Sub Product group (S-SPG) on {j}",
                         df.loc[df['SPG name'] == j, 'sub subproduct groups'].unique(),
@@ -125,14 +117,12 @@ def filter_dataframe(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 def system_requirement():
-   
     st.empty()
     st.title("Product Breakdown Structure")
     st.write(
         """This app streamlines the initial engingeeing process for a railway vehicle manufacturer by allowing users to select components based on the [BS EN 15380-2-2006 standard](https://drive.google.com/file/d/1O20tY4gVVmZVUSgSxAiYVSOxFs3tg48k/view?usp=share_link). It simplifies the initial steps of RAMS, especially on system selection, but please note that the app is not meant to fully cover the whole process. Human supervision is still necessary to ensure accuracy.
         """
     )
-    
     tab1,tab2 = st.tabs(["Product Breakdown Picker 🍒","Product Breakdown Checker ✔️"])
     with tab1:
         #get sheet id
@@ -146,7 +136,6 @@ def system_requirement():
         df.insert(5, "Qty/TS for level 2", "")
         df.insert(7, "Qty/TS for level 3", "")
         df.insert(9, "Remark", "")
-
         gd=GridOptionsBuilder.from_dataframe(df)
         gd.configure_pagination(enabled=True)
         gd.configure_default_column(editable=True,groupable=True)
@@ -159,13 +148,10 @@ def system_requirement():
         tot_url=(f"https://docs.google.com/spreadsheets/d/{types_of_train}/export?format=csv")
         #create dataframe from csv
         tot_df=pd.read_csv(tot_url)
-
         #get unique Type of Train
         unq_tot=tot_df['Type of Train'].unique()
-
         # Define select_tot as the selected value from selectbox
         select_tot = st.selectbox('Pilih Jenis Kereta',unq_tot,key=str("select_tot"))
-
         #filter df based on type of train selection single selectbox
         filtered_tot = tot_df[tot_df['Type of Train'] == select_tot]
         #get unique level1 based on filtered tot df
@@ -175,17 +161,14 @@ def system_requirement():
         #convert google sheet to csv for easy handling
         csv_url=(f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv")
         #create dataframe from csv
-        df=pd.read_csv(csv_url)
-             
+        df=pd.read_csv(csv_url)       
         # left join with unq_filtered_tot
         joined_df = df.merge(unq_filtered_tot, on='MPG name', how='right')
-        
         # Display the joined DataFrame
         gd=GridOptionsBuilder.from_dataframe(joined_df)
         gd.configure_default_column(editable=False,groupable=True)
         gridoptions=gd.build()
         AgGrid(joined_df,gridOptions=gridoptions, height=500, theme='alpine')
-
         uploaded_file2 = st.file_uploader("Upload a CSV or Excel file for the second dataset:", type=["csv", "xlsx"])
         if uploaded_file2 is not None:
             data2 = pd.read_csv(uploaded_file2) if uploaded_file2.type=='csv' else pd.read_excel(uploaded_file2)
@@ -197,7 +180,6 @@ def system_requirement():
             if data1 is not None and data2 is not None:
                 # Filter the columns in dataset 2 that are not in dataset 1
                 data2 = data2[data2.columns.intersection(data1.columns)]
-
                 # Compare the datasets
                 common = data1.merge(data2, on=data1.columns.tolist())
                 not_in_data1 = data2[~data2.index.isin(common.index)]
@@ -206,14 +188,10 @@ def system_requirement():
                 df = pd.DataFrame(columns=["Dataset 1", "Shared", "Not in Dataset 1", "Not in Dataset 2","Dataset 2"])
                 for index in not_in_data1.index:
                     df = df.append({"Dataset 1": "", "Shared": "", "Not in Dataset 1": "✔", "Not in Dataset 2":"", "Dataset 2": not_in_data1.loc[index].values.tolist()}, ignore_index=True)
-
                 for index in not_in_data2.index:
                     df = df.append({"Dataset 1": not_in_data2.loc[index].values.tolist(), "Shared": "", "Not in Dataset 1": "", "Not in Dataset 2": "✔", "Dataset 2":""},ignore_index=True)
                 for index in common.index:
-                    df = df.append({"Dataset 1": common.loc[index].values.tolist(), "Shared": "✔", "Not in Dataset 1": "", "Not in Dataset 2": "", "Dataset 2": common.loc[index].values.tolist()},ignore_index=True)
-
-                    
-                                        
+                    df = df.append({"Dataset 1": common.loc[index].values.tolist(), "Shared": "✔", "Not in Dataset 1": "", "Not in Dataset 2": "", "Dataset 2": common.loc[index].values.tolist()},ignore_index=True)                             
             # Display the DataFrame
             gd=GridOptionsBuilder.from_dataframe(df)
             gd.configure_default_column(editable=False,groupable=True)
@@ -228,18 +206,14 @@ def Supplier():
     Suppplier_url=(f"https://docs.google.com/spreadsheets/d/{Suppplier}/export?format=csv")
     #create dataframe from csv
     Suppplier_df=pd.read_csv(Suppplier_url)
-    
     unq_cat=Suppplier_df['Category'].unique()
     cat=st.selectbox("Pilih Category yang ada",unq_cat)
     unq_subcat = Suppplier_df[Suppplier_df['Category'].str.contains(cat)]['SubName Category'].unique()
     subcat=st.selectbox("Pilih Sub Category yang ada",unq_subcat)
     unq_subsubcat = Suppplier_df[Suppplier_df['Category'].str.contains(cat)&Suppplier_df['SubName Category'].str.contains(subcat)]['Sub SubName category'].unique()
     subsubcat=st.selectbox("Pilih Sub SubCategory yang ada",unq_subsubcat)
-    
-  
     #filter
     filtered_Suppplier = Suppplier_df[Suppplier_df['Category'].str.contains(cat)&Suppplier_df['SubName Category'].str.contains(subcat)&Suppplier_df['Sub SubName category'].str.contains(subsubcat)]
-   
     st.write(f"{filtered_Suppplier.shape[0]} number of supplier found using keyword : {cat} & {subcat} & {subsubcat}")
     # Display the DataFrame
     gd=GridOptionsBuilder.from_dataframe(filtered_Suppplier )
@@ -265,6 +239,7 @@ def Standards():
             st.write(f"{standards_df.shape[0]} number of standards found using keyword : {keyword}")
         # Display the DataFrame
         standards_df['link'] = standards_df['id'].apply(lambda x: f'[{x}](https://drive.google.com/file/d/{x}/view)')
+        st.write(standards_df)
         app = Dash(__name__, external_stylesheets=[dbc.themes.CYBORG])
         columnDefs = [{"headerName": "location","field": "location"},{"headerName": "name","field": "name"},{"headerName":"link","field": "link","cellRenderer": "markdown"}]
         defaultColDef = {"filter": True,"floatingFilter": True,"resizable": True,"sortable": True,"editable": True,"minWidth": 125}

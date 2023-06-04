@@ -1328,7 +1328,7 @@ def chat():
         chunk_overlap=200,
         length_function=len
     )
-    chunks = text_splitter.split_text(text)
+    chunks = text_splitter.split_text(context)
     embeddings = HuggingFaceInstructEmbeddings(model_name="hkunlp/instructor-xl")
     vectorstore = FAISS.from_texts(texts=chunks, embedding=embeddings)
     llm = HuggingFaceHub(repo_id="google/flan-t5-xxl", model_kwargs={"temperature":0.5, "max_length":512})

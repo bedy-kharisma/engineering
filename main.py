@@ -238,30 +238,8 @@ def Standards():
         if keyword!="":
             st.write(f"{standards_df.shape[0]} number of standards found using keyword : {keyword}")
         # Display the DataFrame
-        standards_df['link'] = standards_df['id'].apply(lambda x: f'[{x}](https://drive.google.com/file/d/{x}/view)')
         st.write(standards_df)
-        app = Dash(__name__, external_stylesheets=[dbc.themes.CYBORG])
-        columnDefs = [{"headerName": "location","field": "location"},{"headerName": "name","field": "name"},{"headerName":"link","field": "link","cellRenderer": "markdown"}]
-        defaultColDef = {"filter": True,"floatingFilter": True,"resizable": True,"sortable": True,"editable": True,"minWidth": 125}
-        table = dag.AgGrid(id="Standards",className="ag-theme-alpine-dark",columnDefs=columnDefs,rowData=standards_df.to_dict('records'),
-            columnSize="sizeToFit",defaultColDef=defaultColDef,dashGridOptions={"undoRedoCellEditing": True, "rowSelection":"multiple"},
-        )
-        app.layout = dbc.Container(
-            [
-                html.Div("Standards", className="h3 p-2 text-white bg-secondary"),
-                dbc.Row(
-                    [
-                        dbc.Col(
-                            [
-                                table
-                            ], width={"size": 10, "offset": 1},
-                        ),
-                    ],
-                ),
-            ],
-        )
         
-
 def FMECA():
     st.empty()
     uploaded_file2 = st.file_uploader("Upload a CSV or Excel file of Product Breakdown Structure:", type=["csv", "xlsx"])
@@ -279,13 +257,9 @@ def FMECA():
         filter1 = FMECA_df["MPG name"].isin(data1["MPG name"])
         filter2 = FMECA_df["SPG name"].isin(data1["SPG name"])
         filter3 = FMECA_df["sub subproduct groups"].isin(data1["sub subproduct groups"])
-        
         merged_df=FMECA_df[filter1&filter2&filter3]
-        
     else:
         st.warning("Please upload a CSV or Excel file for the second dataset") 
-   
-   
     if st.button("Generate initial FMECA") and uploaded_file2 is not None:
         # Display the DataFrame
         gd=GridOptionsBuilder.from_dataframe(merged_df)
@@ -304,7 +278,6 @@ def failure():
     df=pd.read_csv(csv_url)
     unq_mainsys=df['Main System'].unique()
     df['Jumlah kegagalan']= df['Jumlah kegagalan'].astype(int)
-
     st.markdown("# Failure Rate Calculator")
     st.write("This failure rate calcuator is populated using database saved in this [google sheet](https://docs.google.com/spreadsheets/d/1yYY6kEVkBRRdmNcGG1cG2F3gbPA_OZJ5rUTWahx5X-U/edit?usp=sharing)")
     mainsys = st.selectbox('Pilih Main System apa yang akan Anda hitung',unq_mainsys)
@@ -320,22 +293,18 @@ def failure():
     vendor=st.multiselect('Data dari Vendor saja yang akan Anda gunakan',unq_vendor,unq_vendor)
     #filter based on multiple select vendor name
     filtered_df = filtered_df[filtered_df['Vendor Name'].isin(vendor)]
-
     # Create a new dataframe with the duplicates removed
     df_no_duplicates = filtered_df.drop_duplicates(subset='Project Name', inplace=False)
     # sum the values in the 'operating hours per year' column
     total_ophours = df_no_duplicates['Operating Hours per Year'].sum()
     # Assign the sum back to the original dataframe
     filtered_df['Total Operating Hours'] = total_ophours.astype(int)
-
     #calculate total quantity
     filtered_df['Total Quantity'] = filtered_df.groupby('Item Name')['Quantity all Trainset'].transform('sum')
     filtered_df['Total Quantity']= filtered_df['Total Quantity'].astype(int)
-
     #calculate t = Total komponen*OH
     filtered_df['Total komponen*OH']= filtered_df['Total Quantity']*filtered_df['Total Operating Hours']
     filtered_df['Total komponen*OH']= filtered_df['Total komponen*OH']
-
     # Define the function
     def failure_rate(row):
         if row['Total Quantity'] == 0 or row['Total Operating Hours'] == 0:
@@ -346,12 +315,10 @@ def failure():
             return 1 / (row['Total Quantity'] * row['Total Operating Hours'])
     # Apply the function to the dataframe
     filtered_df['Failure Rate'] = filtered_df.apply(failure_rate, axis=1)
-
     #change into scientific format
     def to_scientific(x):
         return '{:.2e}'.format(x)
     filtered_df['Failure Rate'] = filtered_df['Failure Rate'].apply(to_scientific)
-
     #show only unique item
     unique_df = filtered_df.drop_duplicates(subset=['Item Ref', 'Item Name'])
     unique_df  = unique_df .reset_index().drop(columns='index')
@@ -364,7 +331,6 @@ def FBS():
         """This app streamlines the initial engingeeing process for a railway vehicle manufacturer by allowing users to select functions based on the [BS EN 15380-4-2013 standard](https://drive.google.com/file/d/19Wmq1jLGlQdNZL9UpnUgL80Ec5c-gC1M/view?usp=share_link). It simplifies the initial steps of RAMS, such as system requirements, selection, and design, but please note that the app is not meant to fully cover the whole process. Human supervision is still necessary to ensure accuracy.
         """
     )
-    
     tab1,tab2 = st.tabs(["Function Breakdown Picker 🍒","Function Breakdown Checker ✔️"])
     with tab1:
         #get sheet id level1-3 FBS
@@ -375,13 +341,10 @@ def FBS():
         fbs_df=pd.read_csv(csv_url,on_bad_lines='skip')
         ##################
         to_filter_columns = st.multiselect("Function Level 1 apa sajakah yang akan Anda gunakan", fbs_df['level 1 Function'].unique(),fbs_df['level 1 Function'].unique(),key=1)
-
         modification_container = st.container()
         with modification_container:
-
             level2 = []
             level3 = []
-
             for i in to_filter_columns: 
                 if pd.isna(i):
                     continue
@@ -399,7 +362,6 @@ def FBS():
                             continue
                         left, right = st.columns((3, 20))
                         left.write("↳↳")
-
                         user_lvl3_input = right.multiselect(
                             f"Choose Level 3 Function on {j}",
                             fbs_df.loc[fbs_df['level 2 Function'] == j, 'level 3 Function'].dropna().unique(),
@@ -410,12 +372,10 @@ def FBS():
         fbs_df = fbs_df[fbs_df['level 2 Function'].isin(level2)]
         fbs_df = fbs_df[fbs_df['level 3 Function'].isin(level3)]
         st.markdown("## Berikut Functions yang Anda pilih:")
-    
         gd=GridOptionsBuilder.from_dataframe(fbs_df)
         gd.configure_default_column(editable=True,groupable=True)
         gridoptions=gd.build()
         AgGrid(fbs_df,gridOptions=gridoptions, height=800, theme='alpine')
-        
     with tab2:
         #get sheet id level1-3 FBS
         sheet_id='1yEtUmBuxRewIiclGothFn9IaZdgm458owf8V_ZJnYQk'
@@ -424,13 +384,11 @@ def FBS():
         #create dataframe from csv
         fbs_df=pd.read_csv(csv_url,on_bad_lines='skip')
         ##################
-        
         # Display the joined DataFrame
         gd=GridOptionsBuilder.from_dataframe(fbs_df)
         gd.configure_default_column(editable=False,groupable=True)
         gridoptions=gd.build()
         AgGrid(fbs_df,gridOptions=gridoptions, height=500, theme='alpine')
-
         uploaded_file2 = st.file_uploader("Upload a CSV or Excel file for the second dataset:", type=["csv", "xlsx"])
         if uploaded_file2 is not None:
             data2 = pd.read_csv(uploaded_file2) if uploaded_file2.type=='csv' else pd.read_excel(uploaded_file2)
@@ -442,7 +400,6 @@ def FBS():
             if data1 is not None and data2 is not None:
                 # Filter the columns in dataset 2 that are not in dataset 1
                 data2 = data2[data2.columns.intersection(data1.columns)]
-
                 # Compare the datasets
                 common = data1.merge(data2, on=data1.columns.tolist())
                 not_in_data1 = data2[~data2.index.isin(common.index)]
@@ -451,12 +408,10 @@ def FBS():
                 df = pd.DataFrame(columns=["Dataset 1", "Shared", "Not in Dataset 1", "Not in Dataset 2","Dataset 2"])
                 for index in not_in_data1.index:
                     df = df.append({"Dataset 1": "", "Shared": "", "Not in Dataset 1": "✔", "Not in Dataset 2":"", "Dataset 2": not_in_data1.loc[index].values.tolist()}, ignore_index=True)
-
                 for index in not_in_data2.index:
                     df = df.append({"Dataset 1": not_in_data2.loc[index].values.tolist(), "Shared": "", "Not in Dataset 1": "", "Not in Dataset 2": "✔", "Dataset 2":""},ignore_index=True)
                 for index in common.index:
-                    df = df.append({"Dataset 1": common.loc[index].values.tolist(), "Shared": "✔", "Not in Dataset 1": "", "Not in Dataset 2": "", "Dataset 2": common.loc[index].values.tolist()},ignore_index=True)
-                                        
+                    df = df.append({"Dataset 1": common.loc[index].values.tolist(), "Shared": "✔", "Not in Dataset 1": "", "Not in Dataset 2": "", "Dataset 2": common.loc[index].values.tolist()},ignore_index=True)                                   
             # Display the DataFrame
             gd=GridOptionsBuilder.from_dataframe(df)
             gd.configure_default_column(editable=False,groupable=True)
@@ -468,43 +423,31 @@ def Matcod():
     #convert google sheet to csv for easy handling
     csv_url=(f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv")
     #create dataframe from csv
-    database_df=pd.read_csv(csv_url,on_bad_lines='skip')
-        
-    #pickle_file = 'database_df.pkl'
-    #file_url = 'https://raw.githubusercontent.com/bedy-kharisma/engineering/main/'+ pickle_file
-    #response = requests.get(file_url)
-    #if response.status_code == 200:
-    #    content = BytesIO(response.content)
-    #    database_df=pd.read_pickle(content) 
-
+    database_df=pd.read_csv(csv_url,on_bad_lines='skip')   
     pickle_file = 'TB1_df.pkl'
     file_url = 'https://raw.githubusercontent.com/bedy-kharisma/engineering/main/'+ pickle_file
     response = requests.get(file_url)
     if response.status_code == 200:
         content = BytesIO(response.content) 
         TB1_df=pd.read_pickle(content) 
-
     pickle_file = 'TB2_df.pkl'   
     file_url = 'https://raw.githubusercontent.com/bedy-kharisma/engineering/main/'+ pickle_file
     response = requests.get(file_url)
     if response.status_code == 200:
         content = BytesIO(response.content) 
         TB2_df=pd.read_pickle(content) 
-
     pickle_file = 'Fastening_df.pkl' 
     file_url = 'https://raw.githubusercontent.com/bedy-kharisma/engineering/main/'+ pickle_file
     response = requests.get(file_url)
     if response.status_code == 200:
         content = BytesIO(response.content) 
         Fastening_df=pd.read_pickle(content) 
-
     pickle_file = 'maincom_df.pkl'
     file_url = 'https://raw.githubusercontent.com/bedy-kharisma/engineering/main/'+ pickle_file
     response = requests.get(file_url)
     if response.status_code == 200:
         content = BytesIO(response.content) 
         maincom_df=pd.read_pickle(content) 
-
     pickle_file = 'sw_df.pkl' 
     file_url = 'https://raw.githubusercontent.com/bedy-kharisma/engineering/main/'+ pickle_file
     response = requests.get(file_url)
@@ -518,35 +461,30 @@ def Matcod():
     if response.status_code == 200:
         content = BytesIO(response.content)
         el_df=pd.read_pickle(content) 
-
     pickle_file = 'brake_df.pkl'
     file_url = 'https://raw.githubusercontent.com/bedy-kharisma/engineering/main/'+ pickle_file
     response = requests.get(file_url)
     if response.status_code == 200:
         content = BytesIO(response.content)
         brake_df=pd.read_pickle(content) 
-
     pickle_file = 'bogie_df.pkl'
     file_url = 'https://raw.githubusercontent.com/bedy-kharisma/engineering/main/'+ pickle_file
     response = requests.get(file_url)
     if response.status_code == 200:
         content = BytesIO(response.content)
         bogie_df=pd.read_pickle(content) 
-
     pickle_file = 'coupler_df.pkl'    
     file_url = 'https://raw.githubusercontent.com/bedy-kharisma/engineering/main/'+ pickle_file
     response = requests.get(file_url)
     if response.status_code == 200:
         content = BytesIO(response.content)
         coupler_df=pd.read_pickle(content) 
-
     pickle_file = 'interior_df.pkl'
     file_url = 'https://raw.githubusercontent.com/bedy-kharisma/engineering/main/'+ pickle_file
     response = requests.get(file_url)
     if response.status_code == 200:
         content = BytesIO(response.content)
         interior_df=pd.read_pickle(content) 
-
     pickle_file = 'piping_df.pkl'
     file_url = 'https://raw.githubusercontent.com/bedy-kharisma/engineering/main/'+ pickle_file
     response = requests.get(file_url)
@@ -560,14 +498,12 @@ def Matcod():
     if response.status_code == 200:
         content = BytesIO(response.content)
         cons_df=pd.read_pickle(content)
-
     pickle_file = 'tools_df.pkl'
     file_url = 'https://raw.githubusercontent.com/bedy-kharisma/engineering/main/'+ pickle_file
     response = requests.get(file_url)
     if response.status_code == 200:
         content = BytesIO(response.content)
         tools_df=pd.read_pickle(content)
-
     pickle_file = 'raw_df.pkl' 
     file_url = 'https://raw.githubusercontent.com/bedy-kharisma/engineering/main/'+ pickle_file
     response = requests.get(file_url)
@@ -581,18 +517,15 @@ def Matcod():
     if response.status_code == 200:
         content = BytesIO(response.content)
         spare_df=pd.read_pickle(content)
-
     pickle_file = 'facilities_df.pkl'
     file_url = 'https://raw.githubusercontent.com/bedy-kharisma/engineering/main/'+ pickle_file
     response = requests.get(file_url)
     if response.status_code == 200:
         content = BytesIO(response.content)
         facilities_df=pd.read_pickle(content)
-
     st.title("MATERIAL CODE")
     tab1, tab2 = st.tabs(["Request", "Verification"])
     with tab1:
-
         # Display the DataFrame
         gd=GridOptionsBuilder.from_dataframe(database_df )
         gd.configure_pagination(enabled=True)
@@ -608,19 +541,14 @@ def Matcod():
         st.write(select_TB1)
         #filter TB2 based on type of train selection single selectbox
         filtered_TB2 = TB2_df[TB2_df['CODE_TB1'].str.contains(select_TB1, na=False)]
-
         unq_TB2=filtered_TB2['NAMA'].unique()
-
         # Define select as the selected value from selectbox
         select_TB2 = st.selectbox('Choose TB2 Code',unq_TB2)
         select_TB2 = xlookup(select_TB2, TB2_df['NAMA'],TB2_df['CODE_TB2'])
-
         code=select_TB1+select_TB2
         st.write(code)
         df_dict = {"A54": el_df,"A52": el_df,"B39": Fastening_df, "B40": maincom_df, "B54": sw_df, "B52": el_df, "B47": brake_df, "B48": bogie_df, "B49": coupler_df, "B50": interior_df, "B51": piping_df, "D29": cons_df, "D30": cons_df, "D31": cons_df, "D32": cons_df, "D33": cons_df, "D61": cons_df, "D62": cons_df, "D63": cons_df, "D64": cons_df, "D65": cons_df, "D66": cons_df, "D67": cons_df, "D68": cons_df, "D69": cons_df, "D70": cons_df, "D71": cons_df, "D72": cons_df, "D73": cons_df, "D74": cons_df, "D75": cons_df, "D76": cons_df, "D80": cons_df, "D82": cons_df, "D83": cons_df, "D84": cons_df, "D98": cons_df, "D99": cons_df, "C71": tools_df, "C77": tools_df, "C78": tools_df, "C79": tools_df, "C85": tools_df, "C86": tools_df, "C87": tools_df, "C88": tools_df, "C89": tools_df, "C90": tools_df, "C91": tools_df, "C92": tools_df, "C93": tools_df, "C94": tools_df, "C95": tools_df, "C96": tools_df, "A01": raw_df, "A04": raw_df, "A09": raw_df, "A10": raw_df, "A11": raw_df, "A12": raw_df, "A13": raw_df, "A14": raw_df, "A15": raw_df, "A16": raw_df, "A17": raw_df, "A18": raw_df, "A19": raw_df, "A20": raw_df, "A21": raw_df, "A22": raw_df, "A23": raw_df, "A24": raw_df, "A25": raw_df, "B98": spare_df, "D98": spare_df, "E97": facilities_df}
-
         skip_codes = ["B37", "B41", "B42", "B43", "B44","B45", "B46"]
-
         if code not in skip_codes:
             selected_df = df_dict[code]
             if selected_df is not None:
@@ -647,9 +575,7 @@ def Matcod():
                          data_return_mode=DataReturnMode.AS_INPUT, update_on='VALUE_CHANGED',        
                          enable_enterprise_modules=True, update_mode=GridUpdateMode.SELECTION_CHANGED,
                          allow_unsafe_jscode=True, fit_columns_on_grid_load=True)
-
         st.write("### If you are sure that what you are looking for is not listed there, please fill up the entry form below:")
-
         user_input = st.text_input("Insert unique number id", "",max_chars=7, key="input")
         if validate_numeric(user_input) and (len(code+user_input)<=12):
             st.write("New Material Code :")
@@ -671,13 +597,9 @@ def Matcod():
                     sheet=client.open("database").sheet1
                     sheet.update([database_df.columns.values.tolist()]+database_df.values.tolist())
                     st.success('New Material Code has been generated, Contact your EIM to verify it')
-
         else:
             st.write('Please enter a numeric value only & make sure the length is <= 12 characters')
-        
-
-            
-    with tab2:
+     with tab2:
         password=st.text_input("Insert admin password","",type="password")
         if password == "admin":
             funct=st.radio(label="Functions:", options=['Edit','Delete'])
@@ -706,7 +628,6 @@ def Matcod():
                          data_return_mode=DataReturnMode.AS_INPUT, update_on='VALUE_CHANGED',        
                          enable_enterprise_modules=True, update_mode=GridUpdateMode.SELECTION_CHANGED,
                          allow_unsafe_jscode=True, fit_columns_on_grid_load=True)
-
                 # Update the original DataFrame
                 data=aggrid['data']
                 database_df=pd.DataFrame(data)
@@ -714,9 +635,7 @@ def Matcod():
                 sheet_url = st.secrets["private_gsheets_url"]
                 sheet=client.open("database").sheet1
                 sheet.update([database_df.columns.values.tolist()]+database_df.values.tolist())
-
-                st.info("Total rows :"+str(len(database_df)))
-              
+                st.info("Total rows :"+str(len(database_df)))       
             if funct =='Edit':
                 # Display the DataFrame
                 gd=GridOptionsBuilder.from_dataframe(database_df)
@@ -734,7 +653,6 @@ def Matcod():
                 sheet=client.open("database").sheet1
                 sheet.update([database_df.columns.values.tolist()]+database_df.values.tolist())
                 st.info("Total rows :"+str(len(database_df)))
-
 
 # FITTINGS
 def ExponentialFitting(Data):

@@ -1323,19 +1323,20 @@ def chat():
         filtered_std = df[df['text'].str.contains(keyword, flags=re.IGNORECASE)]
         column_values = filtered_std['text'].astype(str).values
         context = ' '.join(column_values)
-        text_splitter = CharacterTextSplitter(
-            separator="\n",
-            chunk_size=10000,
-            chunk_overlap=200,
-            length_function=len
-        )
-        chunks = text_splitter.split_text(context)
-        embeddings = HuggingFaceInstructEmbeddings(model_name="hkunlp/instructor-xl")
-        vectorstore = FAISS.from_texts(texts=chunks, embedding=embeddings)
-        prompt_node = PromptNode(model_name_or_path="google/flan-t5-base", use_gpu=True)
-        prompt_text = "Consider you are a rolling stock consultant provided with this query: {query} provide answer from the following context: {contexts}. Answer:"
-        output = prompt_node.prompt(prompt_template=prompt_text, query=user_question, contexts=chunks)
-        st.write(output[0])
+        prompt_text = f"Consider you are a rolling stock consultant provided with this query: {user_question} provide answer from the following context: {context}. Answer:"
+        import requests
+        API_URL = "https://api-inference.huggingface.co/models/sentence-transformers/multi-qa-mpnet-base-dot-v1"
+        headers = {"Authorization": "Bearer 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"}
+        # Make a request to the inference API endpoint
+        response = requests.post(API_URL, headers=headers, json={'prompt': prompt_text})
+
+        if response.status_code == 200:
+            output = response.json()
+            st.write(output['answer'])
+        else:
+            st.write("Error occurred while retrieving the answer.")
+        
+
 
 page_names_to_funcs = {
     "Product Breakdown Structure": system_requirement,

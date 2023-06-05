@@ -36,14 +36,7 @@ from docx import Document
 from docx.shared import Inches
 import warnings
 #for chat
-from haystack import Pipeline
-from haystack.nodes import TextConverter, PreProcessor
-from haystack.document_stores import FAISSDocumentStore, InMemoryDocumentStore
-from haystack.pipelines.standard_pipelines import TextIndexingPipeline
-from sentence_transformers import SentenceTransformer
-from haystack.nodes import EmbeddingRetriever, FARMReader
-from haystack.pipelines import ExtractiveQAPipeline
-from haystack.nodes import PromptNode, PromptTemplate
+
 
 warnings.filterwarnings("ignore")
 #Create a word doc

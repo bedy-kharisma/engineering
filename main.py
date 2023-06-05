@@ -1336,14 +1336,13 @@ def chat():
 		)
 		texts = text_splitter.split_documents(loader.load())
 		embeddings = OpenAIEmbeddings(model="ada")
-		db = Chroma.from_documents(texts, embeddings)
-		retriever = db.as_retriever(search_type="similarity", search_kwargs={"k":20})
+		docsearch = Chroma.from_documents(texts, embeddings)
+		
 		st.write(texts)
 		from langchain.chains.question_answering import load_qa_chain
-		qa = RetrievalQA.from_chain_type(
-		    llm=OpenAI(), chain_type="stuff", retriever=retriever, return_source_documents=False)
-		result = qa({"query": query})
-		st.write(result['result'])
+		qa = RetrievalQA.from_chain_type(llm=OpenAI(), chain_type="stuff", retriever=docsearch.as_retriever())
+		
+		st.write(qa.run(query))
 		
 page_names_to_funcs = {
     "Product Breakdown Structure": system_requirement,

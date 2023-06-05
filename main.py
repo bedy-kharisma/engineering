@@ -1337,13 +1337,13 @@ def chat():
 		filtered_std['name'] = filtered_std['name'].str.replace('.pdf', '.txt')
 		# Loop through each row of the dataframe
 		for index, row in filtered_std.iterrows():
-		    # Get the file name and text for this row
-		    file_name = row['name']
-		    text = row['text']
-		    # Create a new text file with the given file name and write the text to it
-		    file_path = os.path.join(folder, file_name)
-		    with open(file_path, 'w', errors='ignore') as f:
-			f.write(text)
+			# Get the file name and text for this ro
+			file_name = row['name']
+			text = row['text']
+			# Create a new text file with the given file name and write the text to it
+			file_path = os.path.join(folder, file_name)
+			with open(file_path, 'w', errors='ignore') as f:
+				f.write(text)
 		#defining pipeline
 		document_store = InMemoryDocumentStore()
 		indexing_pipeline = Pipeline()

@@ -46,7 +46,7 @@ from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationalRetrievalChain
 from htmlTemplates import css, bot_template, user_template
 from langchain.llms import HuggingFaceHub
-from openai import OpenAIEmbeddings
+import openai
 
 warnings.filterwarnings("ignore")
 #Create a word doc

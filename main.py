@@ -1304,7 +1304,6 @@ def embedding(payload):
 	return response.json()
 
 def chat():
-    load_dotenv()
     st.write(css, unsafe_allow_html=True)
     # Load the dataframe from a pickle file
     df = pd.read_pickle('./standards.pkl')

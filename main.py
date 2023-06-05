@@ -1317,6 +1317,7 @@ def chat():
 		text = ",".join(filtered_std['text'].astype(str))
 		from langchain.docstore.document import Document
 		doc = Document(page_content=text)
+		from langchain.text_splitter import RecursiveCharacterTextSplitter
 		text_splitter = RecursiveCharacterTextSplitter(
 		    chunk_size = 1000,
 		    chunk_overlap  = 20,

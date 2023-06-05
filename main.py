@@ -1317,7 +1317,10 @@ def chat():
 	# Filter by keyword
 		filtered_std  = df[df["location"].apply(lambda x: any(item in x for item in std_type))]
 		filtered_std = filtered_std[filtered_std['text'].str.contains(keyword, flags=re.IGNORECASE)]
-		st.write(filtered_std)
+		filtered_std['link'] = filtered_std['id'].apply(lambda x: f'<a target="_blank" href="https://drive.google.com/file/d/{x}/view">{x}</a>')
+		filtered_std = filtered_std.to_html(escape=False)
+		selected_df = filtered_std[["location", "name", "link"]]
+		st.write(selected_df, unsafe_allow_html=True)
 		joined = ",".join(filtered_std['text'].astype(str))
 		from langchain.docstore.document import Document
 		doc = Document(page_content=joined)

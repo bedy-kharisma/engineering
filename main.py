@@ -1330,8 +1330,8 @@ def chat():
 		filtered_std = df[df['text'].str.contains(keyword, flags=re.IGNORECASE)]
 		loader = DataFrameLoader(filtered_std, page_content_column="name")
 		text_splitter = RecursiveCharacterTextSplitter(
-		    chunk_size = 10000,
-		    chunk_overlap  = 200,
+		    chunk_size = 1000,
+		    chunk_overlap  = 20,
 		    length_function = len,
 		)
 		texts = text_splitter.split_documents(loader.load())

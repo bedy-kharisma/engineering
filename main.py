@@ -36,25 +36,11 @@ from docx import Document
 from docx.shared import Inches
 import warnings
 #for chat
-from dotenv import load_dotenv
-from PyPDF2 import PdfReader
+from langchain.embeddings.openai import OpenAIEmbeddings
+from langchain.vectorstores import Chroma
 from langchain.text_splitter import CharacterTextSplitter
-from langchain.embeddings import OpenAIEmbeddings, HuggingFaceInstructEmbeddings
-from langchain.vectorstores import FAISS
-from langchain.chat_models import ChatOpenAI
-from langchain.memory import ConversationBufferMemory
-from langchain.chains import ConversationalRetrievalChain
-from htmlTemplates import css, bot_template, user_template
-from langchain.llms import HuggingFaceHub
-#chat v2
-from langchain.chains import RetrievalQA #-> for retrieval QA
-from langchain.chains.question_answering import load_qa_chain #-> for load QA 
-from langchain.indexes import VectorstoreIndexCreator #-> for retrieval QA using vectors index creator. it uses fewer codes with less tokens. So I think this is the best way.
-from langchain.document_loaders import TextLoader, PyPDFLoader, DataFrameLoader #-> types of data loader
-from langchain.text_splitter import CharacterTextSplitter, RecursiveCharacterTextSplitter #-> to splits data to chunks
-from langchain.embeddings import OpenAIEmbeddings #embeddings
-from langchain.vectorstores import Chroma #to create a db of chunks
-from langchain.llms import OpenAI #-> for Large Language Model
+from langchain.llms import OpenAI
+from langchain.chains import RetrievalQA
 
 warnings.filterwarnings("ignore")
 #Create a word doc
@@ -1335,7 +1321,7 @@ def chat():
 		    length_function = len,
 		)
 		texts = text_splitter.split_documents(loader.load())
-		embeddings = OpenAIEmbeddings(model="ada")
+		embeddings = OpenAIEmbeddings()
 		docsearch = Chroma.from_documents(texts, embeddings)
 		
 		st.write(texts)

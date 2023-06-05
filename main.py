@@ -1314,20 +1314,18 @@ def chat():
 	if st.button("Process"):
 	# Filter by keyword
 		filtered_std = df[df['text'].str.contains(keyword, flags=re.IGNORECASE)]
-		loader = DataFrameLoader(filtered_std, page_content_column="name")
+		text = ",".join(filtered_std['text'].astype(str))
+		doc = Document(page_content=text)
 		text_splitter = RecursiveCharacterTextSplitter(
 		    chunk_size = 1000,
 		    chunk_overlap  = 20,
 		    length_function = len,
 		)
-		texts = text_splitter.split_documents(loader.load())
+		texts = text_splitter.split_documents(doc)
 		embeddings = OpenAIEmbeddings()
 		docsearch = Chroma.from_documents(texts, embeddings)
-		
-		st.write(texts)
 		from langchain.chains.question_answering import load_qa_chain
 		qa = RetrievalQA.from_chain_type(llm=OpenAI(), chain_type="stuff", retriever=docsearch.as_retriever())
-		
 		st.write(qa.run(query))
 		
 page_names_to_funcs = {

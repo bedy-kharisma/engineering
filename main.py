@@ -1314,7 +1314,7 @@ def chat():
 	if st.button("Process"):
 	# Filter by keyword
 		filtered_std = df[df['text'].str.contains(keyword, flags=re.IGNORECASE)]
-		jooined = ",".join(filtered_std['text'].astype(str))
+		joined = ",".join(filtered_std['text'].astype(str))
 		from langchain.docstore.document import Document
 		doc = Document(page_content=joined)
 		from langchain.text_splitter import RecursiveCharacterTextSplitter

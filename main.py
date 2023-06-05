@@ -1306,7 +1306,6 @@ def MTBF():
 ##-- CHAT	
 def chat():
 	df = pd.read_pickle('./standards.pkl')
-	st.write(df)
 	df['num_chars'] = df['text'].apply(lambda x: len(x))
 	df = df[df['num_chars'] != 0]
 	# Choose a topic
@@ -1316,7 +1315,8 @@ def chat():
 	query = st.text_input("insert query","vehicle at what speed that must perform dynamic performance test?")
 	if st.button("Process"):
 	# Filter by keyword
-		filtered_std = df[df['text'].str.contains(keyword, flags=re.IGNORECASE)]
+		filtered_std = df[df['column_name'].isin(std_type)]
+		filtered_std = filtered_std[filtered_std['text'].str.contains(keyword, flags=re.IGNORECASE)]
 		joined = ",".join(filtered_std['text'].astype(str))
 		from langchain.docstore.document import Document
 		doc = Document(page_content=joined)

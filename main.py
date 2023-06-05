@@ -1315,7 +1315,7 @@ def chat():
 	query = st.text_input("insert query","vehicle at what speed that must perform dynamic performance test?")
 	if st.button("Process"):
 	# Filter by keyword
-		filtered_std = df[df["location"].str.contains(std_type)]
+		filtered_std = df[df["location"].apply(lambda x: std_type in x)]
 		filtered_std = filtered_std[filtered_std['text'].str.contains(keyword, flags=re.IGNORECASE)]
 		st.write(filtered_std)
 		joined = ",".join(filtered_std['text'].astype(str))

@@ -1314,16 +1314,16 @@ def chat():
 	if st.button("Process"):
 	# Filter by keyword
 		filtered_std = df[df['text'].str.contains(keyword, flags=re.IGNORECASE)]
-		text = ",".join(filtered_std['text'].astype(str))
+		jooined = ",".join(filtered_std['text'].astype(str))
 		from langchain.docstore.document import Document
-		doc = Document(page_content=text)
+		doc = Document(page_content=joined)
 		from langchain.text_splitter import RecursiveCharacterTextSplitter
 		text_splitter = RecursiveCharacterTextSplitter(
 		    chunk_size = 1000,
 		    chunk_overlap  = 20,
 		    length_function = len,
 		)
-		texts = text_splitter.split_documents(doc)
+		texts = text_splitter.create_documents([standards])
 		embeddings = OpenAIEmbeddings()
 		docsearch = Chroma.from_documents(texts, embeddings)
 		from langchain.chains.question_answering import load_qa_chain

@@ -1306,6 +1306,7 @@ def MTBF():
 ##-- CHAT	
 def chat():
 	df = pd.read_pickle('./standards.pkl')
+	st.write(df)
 	df['num_chars'] = df['text'].apply(lambda x: len(x))
 	df = df[df['num_chars'] != 0]
 	# Choose a topic

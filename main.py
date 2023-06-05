@@ -1315,7 +1315,7 @@ def chat():
 	query = st.text_input("insert query","vehicle at what speed that must perform dynamic performance test?")
 	if st.button("Process"):
 	# Filter by keyword
-		filtered_std = df[df['column_name'].isin(std_type)]
+		filtered_std = df[df['location'].isin(std_type)]
 		filtered_std = filtered_std[filtered_std['text'].str.contains(keyword, flags=re.IGNORECASE)]
 		joined = ",".join(filtered_std['text'].astype(str))
 		from langchain.docstore.document import Document

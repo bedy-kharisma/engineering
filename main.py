@@ -1304,31 +1304,31 @@ def embedding(payload):
 	return response.json()
 
 def chat():
-    # Load the dataframe from a pickle file
-    df = pd.read_pickle('./standards.pkl')
-    df['num_chars'] = df['text'].apply(lambda x: len(x))
-    df = df[df['num_chars'] != 0]
-    df = df[['name', 'url', 'text']]
-    selected_columns = ['name', 'text']
-    df = df[selected_columns]
-    keyword = st.text_input("Insert Topic", "running dynamic")
-    user_question = st.text_input("Ask a question about your documents:","vehicle at what speed that must perform dynamic performance test?")
-    if st.button("Process"):
-        filtered_std = df[df['text'].str.contains(keyword, flags=re.IGNORECASE)]
-        column_values = filtered_std['text'].astype(str).values
-        context = ' '.join(column_values)
-	# Split the context into chunks
-        text_splitter = CharacterTextSplitter(separator="\n",chunk_size=10000,chunk_overlap=200,length_function=len)
-        chunks = text_splitter.split_text(context) 
-	st.write(chunks)
-        API_URL = "https://api-inference.huggingface.co/models/sentence-transformers/multi-qa-mpnet-base-dot-v1"
-        headers = {"Authorization": "Bearer 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"}
-        output = requests.post(API_URL, headers=headers, json=({"inputs": {"query": user_question,"sentences": chunks},}))
-        scores=output.json()
-        combined_data = list(zip(chunks, scores))
-        data = {"Chunks": [chunk for chunk, _ in combined_data],"Score": [score for _, score in combined_data]}
-        df = pd.DataFrame(data)
-        st.write(df)
+	# Load the dataframe from a pickle file
+	df = pd.read_pickle('./standards.pkl')
+	df['num_chars'] = df['text'].apply(lambda x: len(x))
+	df = df[df['num_chars'] != 0]
+	df = df[['name', 'url', 'text']]
+	selected_columns = ['name', 'text']
+	df = df[selected_columns]
+	keyword = st.text_input("Insert Topic", "running dynamic")
+	user_question = st.text_input("Ask a question about your documents:","vehicle at what speed that must perform dynamic performance test?")
+	if st.button("Process"):
+		filtered_std = df[df['text'].str.contains(keyword, flags=re.IGNORECASE)]
+		column_values = filtered_std['text'].astype(str).values
+		context = ' '.join(column_values)
+		# Split the context into chunks
+		text_splitter = CharacterTextSplitter(separator="\n",chunk_size=10000,chunk_overlap=200,length_function=len)
+		chunks = text_splitter.split_text(context) 
+		st.write(chunks)
+		API_URL = "https://api-inference.huggingface.co/models/sentence-transformers/multi-qa-mpnet-base-dot-v1"
+		headers = {"Authorization": "Bearer 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"}
+		output = requests.post(API_URL, headers=headers, json=({"inputs": {"query": user_question,"sentences": chunks},}))
+		scores=output.json()
+		combined_data = list(zip(chunks, scores))
+		data = {"Chunks": [chunk for chunk, _ in combined_data],"Score": [score for _, score in combined_data]}
+		df = pd.DataFrame(data)
+		st.write(df)
 
 
         

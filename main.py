@@ -36,7 +36,16 @@ from docx import Document
 from docx.shared import Inches
 import warnings
 #for chat
+from dotenv import load_dotenv
+from PyPDF2 import PdfReader
 from langchain.text_splitter import CharacterTextSplitter
+from langchain.embeddings import OpenAIEmbeddings, HuggingFaceInstructEmbeddings
+from langchain.vectorstores import FAISS
+from langchain.chat_models import ChatOpenAI
+from langchain.memory import ConversationBufferMemory
+from langchain.chains import ConversationalRetrievalChain
+from htmlTemplates import css, bot_template, user_template
+from langchain.llms import HuggingFaceHub
 
 warnings.filterwarnings("ignore")
 #Create a word doc
@@ -1298,40 +1307,84 @@ def MTBF():
         st.markdown("---") 
         st.subheader("Or if you already have filled delivery data and cluster data, upload to the following")
         mtbf_clc(doc)
+##-- CHAT	
+def get_pdf_text(pdf_docs):
+    text = ""
+    for pdf in pdf_docs:
+        pdf_reader = PdfReader(pdf)
+        for page in pdf_reader.pages:
+            text += page.extract_text()
+    return text
 
-def embedding(payload):
-	response = requests.post(API_URL, headers=headers, json=payload)
-	return response.json()
+def get_text_chunks(text):
+    text_splitter = CharacterTextSplitter(
+        separator="\n",
+        chunk_size=1000,
+        chunk_overlap=200,
+        length_function=len
+    )
+    chunks = text_splitter.split_text(text)
+    return chunks
+
+def get_vectorstore(text_chunks):
+    embeddings = OpenAIEmbeddings()
+    # embeddings = HuggingFaceInstructEmbeddings(model_name="hkunlp/instructor-xl")
+    vectorstore = FAISS.from_texts(texts=text_chunks, embedding=embeddings)
+    return vectorstore
+
+def get_conversation_chain(vectorstore):
+    llm = ChatOpenAI()
+    # llm = HuggingFaceHub(repo_id="google/flan-t5-xxl", model_kwargs={"temperature":0.5, "max_length":512})
+    memory = ConversationBufferMemory(
+        memory_key='chat_history', return_messages=True)
+    conversation_chain = ConversationalRetrievalChain.from_llm(
+        llm=llm,
+        retriever=vectorstore.as_retriever(),
+        memory=memory
+    )
+    return conversation_chain
+
+def handle_userinput(user_question):
+    response = st.session_state.conversation({'question': user_question})
+    st.session_state.chat_history = response['chat_history']
+
+    for i, message in enumerate(st.session_state.chat_history):
+        if i % 2 == 0:
+            st.write(user_template.replace(
+                "{{MSG}}", message.content), unsafe_allow_html=True)
+        else:
+            st.write(bot_template.replace(
+                "{{MSG}}", message.content), unsafe_allow_html=True)
+
+
 
 def chat():
-	# Load the dataframe from a pickle file
-	df = pd.read_pickle('./standards.pkl')
-	df['num_chars'] = df['text'].apply(lambda x: len(x))
-	df = df[df['num_chars'] != 0]
-	df = df[['name', 'url', 'text']]
-	selected_columns = ['name', 'text']
-	df = df[selected_columns]
-	keyword = st.text_input("Insert Topic", "running dynamic")
-	user_question = st.text_input("Ask a question about your documents:","vehicle at what speed that must perform dynamic performance test?")
+	load_dotenv()
+	st.set_page_config(page_title="Chat with multiple PDFs",
+		       page_icon=":books:")
+
+	st.subheader("Your documents")
+	pdf_docs = st.file_uploader("Upload your PDFs here and click on 'Process'", accept_multiple_files=True)
 	if st.button("Process"):
-		filtered_std = df[df['text'].str.contains(keyword, flags=re.IGNORECASE)]
-		column_values = filtered_std['text'].astype(str).values
-		context = ' '.join(column_values)
-		# Split the context into chunks
-		text_splitter = CharacterTextSplitter(separator="\n",chunk_size=1000,chunk_overlap=20,length_function=len)
-		chunks = text_splitter.split_text(context) 
-		chunks_df = pd.DataFrame({"Chunks": chunks})
-		chunks_list = chunks_df["Chunks"].values.tolist()
-		st.write(chunks_df)
-		API_URL = "https://api-inference.huggingface.co/models/sentence-transformers/multi-qa-mpnet-base-dot-v1"
-		headers = {"Authorization": "Bearer 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"}
-		output = requests.post(API_URL, headers=headers, json=({"inputs": {"source_sentence": user_question,"sentences": chunks_list},}))
-		scores=output.json()
-		scores_df = pd.DataFrame({"Scores": scores})
-		st.write(scores)
-		combined_df = pd.concat([chunks_df, scores_df], axis=1)
-		df = pd.DataFrame(combined_df)
-		print(df)
+    		with st.spinner("Processing"):
+		# get pdf text
+		raw_text = get_pdf_text(pdf_docs)
+		# get the text chunks
+		text_chunks = get_text_chunks(raw_text)
+		# create vector store
+		vectorstore = get_vectorstore(text_chunks)
+		# create conversation chain
+		st.session_state.conversation = get_conversation_chain(vectorstore)
+	st.write(css, unsafe_allow_html=True)
+	if "conversation" not in st.session_state:
+		st.session_state.conversation = None
+	if "chat_history" not in st.session_state:
+		st.session_state.chat_history = None
+	st.header("Chat with multiple PDFs :books:")
+	user_question = st.text_input("Ask a question about your documents:")
+	if user_question:
+		handle_userinput(user_question)
+
 
 
         

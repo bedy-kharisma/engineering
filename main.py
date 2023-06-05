@@ -1314,7 +1314,7 @@ def chat():
     keyword = st.text_input("Insert Topic", "running dynamic")
     user_question = st.text_input("Ask a question about your documents:","vehicle at what speed that must perform dynamic performance test?")
     if st.button("Process"):
-	filtered_std = df[df['text'].str.contains(keyword, flags=re.IGNORECASE)]
+		filtered_std = df[df['text'].str.contains(keyword, flags=re.IGNORECASE)]
 	column_values = filtered_std['text'].astype(str).values
 	context = ' '.join(column_values)
 	# Split the context into chunks

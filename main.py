@@ -1360,7 +1360,6 @@ def handle_userinput(user_question):
 
 def chat():
 	load_dotenv()
-	st.set_page_config(page_title="Chat with multiple PDFs",page_icon=":books:")
 	st.subheader("Your documents")
 	pdf_docs = st.file_uploader("Upload your PDFs here and click on 'Process'", accept_multiple_files=True)
 	if st.button("Process"):

@@ -36,7 +36,7 @@ from docx import Document
 from docx.shared import Inches
 import warnings
 #for chat
-
+from langchain.text_splitter import CharacterTextSplitter
 
 warnings.filterwarnings("ignore")
 #Create a word doc

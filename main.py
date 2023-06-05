@@ -1318,7 +1318,7 @@ def chat():
 		column_values = filtered_std['text'].astype(str).values
 		context = ' '.join(column_values)
 		# Split the context into chunks
-		text_splitter = CharacterTextSplitter(separator="\n",chunk_size=10000,chunk_overlap=200,length_function=len)
+		text_splitter = CharacterTextSplitter(separator="\n",chunk_size=len(context),chunk_overlap=20,length_function=len)
 		chunks = text_splitter.split_text(context) 
 		st.write(chunks)
 		API_URL = "https://api-inference.huggingface.co/models/sentence-transformers/multi-qa-mpnet-base-dot-v1"

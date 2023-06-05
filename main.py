@@ -55,7 +55,6 @@ from langchain.text_splitter import CharacterTextSplitter, RecursiveCharacterTex
 from langchain.embeddings import OpenAIEmbeddings #embeddings
 from langchain.vectorstores import Chroma #to create a db of chunks
 from langchain.llms import OpenAI #-> for Large Language Model
-from haystack.document_stores import FAISSDocumentStore, InMemoryDocumentStore
 
 warnings.filterwarnings("ignore")
 #Create a word doc
@@ -1328,73 +1327,23 @@ def chat():
 	query = st.text_input("insert query","vehicle at what speed that must perform dynamic performance test?")
 	if st.button("Process"):
 	# Filter by keyword
-		filtered_std = df[df['text'].str.contains(keyword, flags=re.IGNORECASE)]	
-		# Create a folder to store the text files
-		folder = 'text_files'
-		doc_dir = 'text_files'
-		if not os.path.exists(folder):
-		    os.mkdir(folder)
-		# Replace file extensions in file names
-		filtered_std['name'] = filtered_std['name'].str.replace('.pdf', '.txt')
-		# Loop through each row of the dataframe
-		for index, row in filtered_std.iterrows():
-			# Get the file name and text for this ro
-			file_name = row['name']
-			text = row['text']
-			# Create a new text file with the given file name and write the text to it
-			file_path = os.path.join(folder, file_name)
-			with open(file_path, 'w', errors='ignore') as f:
-				f.write(text)
-		#defining pipeline
-		document_store = InMemoryDocumentStore()
-		indexing_pipeline = Pipeline()
-		text_converter = TextConverter()
-		preprocessor = PreProcessor(
-		    clean_whitespace=True,
-		    clean_header_footer=True,
-		    clean_empty_lines=True,
-		    split_by="word",
-		    split_length=1000,
-		    split_overlap=20,
-		    split_respect_sentence_boundary=True,
+		filtered_std = df[df['text'].str.contains(keyword, flags=re.IGNORECASE)]
+		loader = DataFrameLoader(filtered_std, page_content_column="name")
+		text_splitter = RecursiveCharacterTextSplitter(
+		    chunk_size = 10000,
+		    chunk_overlap  = 200,
+		    length_function = len,
 		)
-		indexing_pipeline.add_node(component=text_converter, name="TextConverter", inputs=["File"])
-		indexing_pipeline.add_node(component=preprocessor, name="PreProcessor", inputs=["TextConverter"])
-		indexing_pipeline.add_node(component=document_store, name="DocumentStore", inputs=["PreProcessor"])
-		#reads all related files
-		files_to_index = [doc_dir + "/" + f for f in os.listdir(doc_dir)]
-		indexing_pipeline.run_batch(file_paths=files_to_index)
-		retriever = EmbeddingRetriever(
-		    document_store=document_store, embedding_model="ada"
-		)
-		document_store.update_embeddings(retriever)
-		reader = FARMReader(model_name_or_path="ada", use_gpu=True)
-		pipe = ExtractiveQAPipeline(reader, retriever)
-		#QnA
-		k = 5
-		query = "vehicle at what speed that must perform dynamic performance test?"
-
-		prediction = pipe.run(
-		    query=query,
-		    params={
-			"Retriever": {"top_k": k * 3},
-			"Reader": {"top_k": k * 2}
-		    }
-		)
-		answer_contexts = []
-		for i in range(k):
-		    answer_context = prediction['answers'][i].context
-		    answer_context = answer_context.replace('\n', ' ')  # Remove line feeds
-		    answer_contexts.append(answer_context)
-		joined_contexts = ' '.join(answer_contexts)
-
-		prompt_node = PromptNode(model_name_or_path="ada", use_gpu=True)
-		prompt_text = "Consider you are a rolling stock consultant provided with this query: {query} provide answer from the following context: {contexts}. Answer:"
-		output = prompt_node.prompt(prompt_template=prompt_text, query=query, contexts=joined_contexts)
-		st.write(output[0])
-
-
-		
+		texts = text_splitter.split_documents(loader.load())
+		embeddings = OpenAIEmbeddings(model="ada")
+		db = Chroma.from_documents(texts, embeddings)
+		retriever = db.as_retriever(search_type="similarity", search_kwargs={"k":5})
+		from langchain.chains.question_answering import load_qa_chain
+		qa = RetrievalQA.from_chain_type(
+		    llm=OpenAI(), chain_type="stuff", retriever=retriever, return_source_documents=False)
+		query = "what are the parameters of a bogie that has to be complied?"
+		result = qa({"query": query})
+		st.write(result['result'])
 		
 page_names_to_funcs = {
     "Product Breakdown Structure": system_requirement,

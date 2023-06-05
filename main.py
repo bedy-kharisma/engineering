@@ -1310,7 +1310,7 @@ def chat():
 	df = df[df['num_chars'] != 0]
 	# Choose a topic
 	st.write("""get your open ai api key [here](https://platform.openai.com/account/api-keys)""")
-	OPENAI_API_KEY=st.text_input("insert openai api","sk-xxx")
+	OPENAI_API_KEY=st.text_input("insert openai api",type="password")
 	unique_values = set(df["location"].str.split("/").str[1])
 	std_type = st.multiselect('Select Standards',unique_values,unique_values)
 	keyword = st.text_input("choose topic","running dynamic")

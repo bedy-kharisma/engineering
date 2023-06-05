@@ -1317,6 +1317,7 @@ def chat():
 	# Filter by keyword
 		filtered_std = df[df['location'].isin(std_type)]
 		filtered_std = filtered_std[filtered_std['text'].str.contains(keyword, flags=re.IGNORECASE)]
+		st.write(filtered_std)
 		joined = ",".join(filtered_std['text'].astype(str))
 		from langchain.docstore.document import Document
 		doc = Document(page_content=joined)

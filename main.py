@@ -1307,6 +1307,7 @@ def MTBF():
         st.markdown("---") 
         st.subheader("Or if you already have filled delivery data and cluster data, upload to the following")
         mtbf_clc(doc)
+	
 ##-- CHAT	
 def get_pdf_text(pdf_docs):
     text = ""
@@ -1347,7 +1348,6 @@ def get_conversation_chain(vectorstore):
 def handle_userinput(user_question):
     response = st.session_state.conversation({'question': user_question})
     st.session_state.chat_history = response['chat_history']
-
     for i, message in enumerate(st.session_state.chat_history):
         if i % 2 == 0:
             st.write(user_template.replace(
@@ -1355,8 +1355,6 @@ def handle_userinput(user_question):
         else:
             st.write(bot_template.replace(
                 "{{MSG}}", message.content), unsafe_allow_html=True)
-
-
 
 def chat():
 	load_dotenv()

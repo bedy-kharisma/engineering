@@ -55,6 +55,7 @@ from langchain.text_splitter import CharacterTextSplitter, RecursiveCharacterTex
 from langchain.embeddings import OpenAIEmbeddings #embeddings
 from langchain.vectorstores import Chroma #to create a db of chunks
 from langchain.llms import OpenAI #-> for Large Language Model
+from haystack.document_stores import FAISSDocumentStore, InMemoryDocumentStore
 
 warnings.filterwarnings("ignore")
 #Create a word doc

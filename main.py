@@ -1304,7 +1304,6 @@ def embedding(payload):
 	return response.json()
 
 def chat():
-    st.write(css, unsafe_allow_html=True)
     # Load the dataframe from a pickle file
     df = pd.read_pickle('./standards.pkl')
     df['num_chars'] = df['text'].apply(lambda x: len(x))

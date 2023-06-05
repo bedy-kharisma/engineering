@@ -1324,7 +1324,7 @@ def chat():
 		st.write(chunks_df)
 		API_URL = "https://api-inference.huggingface.co/models/sentence-transformers/multi-qa-mpnet-base-dot-v1"
 		headers = {"Authorization": "Bearer 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"}
-		output = requests.post(API_URL, headers=headers, json=({"inputs": {"source_sentence": user_question,"sentences": chunks},}))
+		output = requests.post(API_URL, headers=headers, json=({"inputs": {"source_sentence": user_question,"sentences": chunks_df["Chunks"]},}))
 		scores=output.json()
 		scores_df = pd.DataFrame({"Scores": scores})
 		st.write(scores)

@@ -1364,7 +1364,7 @@ def chat():
 	st.subheader("Your documents")
 	pdf_docs = st.file_uploader("Upload your PDFs here and click on 'Process'", accept_multiple_files=True)
 	if st.button("Process"):
-    		with st.spinner("Processing"):
+		with st.spinner("Processing"):
 			# get pdf text
 			raw_text = get_pdf_text(pdf_docs)
 			# get the text chunks

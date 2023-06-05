@@ -1321,10 +1321,11 @@ def chat():
 		text_splitter = CharacterTextSplitter(separator="\n",chunk_size=1000,chunk_overlap=20,length_function=len)
 		chunks = text_splitter.split_text(context) 
 		chunks_df = pd.DataFrame({"Chunks": chunks})
+		chunks_list = chunks_df["Chunks"].values.tolist()
 		st.write(chunks_df)
 		API_URL = "https://api-inference.huggingface.co/models/sentence-transformers/multi-qa-mpnet-base-dot-v1"
 		headers = {"Authorization": "Bearer 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"}
-		output = requests.post(API_URL, headers=headers, json=({"inputs": {"source_sentence": user_question,"sentences": chunks_df["Chunks"].values},}))
+		output = requests.post(API_URL, headers=headers, json=({"inputs": {"source_sentence": user_question,"sentences": chunks_list},}))
 		scores=output.json()
 		scores_df = pd.DataFrame({"Scores": scores})
 		st.write(scores)

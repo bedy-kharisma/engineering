@@ -1310,7 +1310,7 @@ def chat():
 	df['num_chars'] = df['text'].apply(lambda x: len(x))
 	df = df[df['num_chars'] != 0]
 	# Choose a topic
-	unique_values = set(df["location"].str.split("/").str[0])
+	unique_values = set(df["location"].str.split("/").str[1])
 	std_type = st.multiselect('Select Standards',unique_values,unique_values)
 	keyword = st.text_input("choose topic","running dynamic")
 	query = st.text_input("insert query","vehicle at what speed that must perform dynamic performance test?")

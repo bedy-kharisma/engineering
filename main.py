@@ -1324,7 +1324,7 @@ def chat():
         headers = {"Authorization": "Bearer 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"}
         output = requests.post(API_URL, headers=headers, json=({"inputs": {"query": user_question,"sentences": chunks},}))
         scores=output.json()
-        combined_data = list(zip(chunks.values(), scores))
+        combined_data = list(zip(chunks, scores))
         data = {"Chunks": [chunk for chunk, _ in combined_data],"Score": [score for _, score in combined_data]}
         df = pd.DataFrame(data)
         st.write(df)

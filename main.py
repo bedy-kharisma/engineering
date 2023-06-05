@@ -1323,7 +1323,7 @@ def chat():
 		    chunk_overlap  = 20,
 		    length_function = len,
 		)
-		texts = text_splitter.create_documents([doc])
+		texts = text_splitter.split_documents([doc])
 		embeddings = OpenAIEmbeddings()
 		docsearch = Chroma.from_documents(texts, embeddings)
 		from langchain.chains.question_answering import load_qa_chain

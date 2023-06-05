@@ -1324,24 +1324,25 @@ def chat():
 	df = df[df['num_chars'] != 0]
 	# Choose a topic
 	keyword = st.text_input("choose topic","running dynamic")
-	query = st.text_input("insert query","what are the parameters of a bogie that has to be complied?")
+	query = st.text_input("insert query","vehicle at what speed that must perform dynamic performance test?")
+	if st.button("Process"):
 	# Filter by keyword
-	filtered_std = df[df['text'].str.contains(keyword)]
-	loader = DataFrameLoader(filtered_std, page_content_column="name")
-	text_splitter = RecursiveCharacterTextSplitter(
-	    chunk_size = 10000,
-	    chunk_overlap  = 200,
-	    length_function = len,
-	)
-	texts = text_splitter.split_documents(loader.load())
-	embeddings = OpenAIEmbeddings(model="ada")
-	db = Chroma.from_documents(texts, embeddings)
-	retriever = db.as_retriever(search_type="similarity", search_kwargs={"k":5})
-	from langchain.chains.question_answering import load_qa_chain
-	qa = RetrievalQA.from_chain_type(
-	    llm=OpenAI(), chain_type="map_reduce", retriever=retriever, return_source_documents=False)
-	result = qa({"query": query})
-	st.write(result['result'])
+		filtered_std = df[df['text'].str.contains(keyword)]
+		loader = DataFrameLoader(filtered_std, page_content_column="name")
+		text_splitter = RecursiveCharacterTextSplitter(
+		    chunk_size = 10000,
+		    chunk_overlap  = 200,
+		    length_function = len,
+		)
+		texts = text_splitter.split_documents(loader.load())
+		embeddings = OpenAIEmbeddings(model="ada")
+		db = Chroma.from_documents(texts, embeddings)
+		retriever = db.as_retriever(search_type="similarity", search_kwargs={"k":5})
+		from langchain.chains.question_answering import load_qa_chain
+		qa = RetrievalQA.from_chain_type(
+		    llm=OpenAI(), chain_type="map_reduce", retriever=retriever, return_source_documents=False)
+		result = qa({"query": query})
+		st.write(result['result'])
 		
 page_names_to_funcs = {
     "Product Breakdown Structure": system_requirement,

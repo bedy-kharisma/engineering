@@ -1320,12 +1320,11 @@ def chat():
 		# Split the context into chunks
 		text_splitter = CharacterTextSplitter(separator="\n",chunk_size=1000,chunk_overlap=20,length_function=len)
 		chunks = text_splitter.split_text(context) 
-		chunks = [chunk.strip() for chunk in chunks]
-		st.write(chunks)
 		API_URL = "https://api-inference.huggingface.co/models/sentence-transformers/multi-qa-mpnet-base-dot-v1"
 		headers = {"Authorization": "Bearer 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"}
 		output = requests.post(API_URL, headers=headers, json=({"inputs": {"query": user_question,"sentences": chunks},}))
 		scores=output.json()
+		st.write(scores)
 		combined_data = list(zip(chunks, scores))
 		data = {"Chunks": [chunk for chunk, _ in combined_data],"Score": [score for _, score in combined_data]}
 		df = pd.DataFrame(data)

@@ -1309,6 +1309,7 @@ def MTBF():
         
 def chat():
     load_dotenv()
+    st.write(css, unsafe_allow_html=True)
     # Load the dataframe from a pickle file
     df = pd.read_pickle('./standards.pkl')
     df['num_chars'] = df['text'].apply(lambda x: len(x))
@@ -1331,30 +1332,52 @@ def chat():
             length_function=len
         )
         chunks = text_splitter.split_text(context)
-
-        # Make a request to the embeddings inference API endpoint
-        API_URL = "https://api-inference.huggingface.co/models/sentence-transformers/multi-qa-mpnet-base-dot-v1"
-        headers = {"Authorization": "Bearer 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"}
-        embeddings_api_response = requests.post(API_URL, headers=headers, json={'context': chunks})
-
-        if embeddings_api_response.status_code == 200:
-            embeddings = embeddings_api_response.json()['embeddings']
-
-            # Make a request to the prompt inference API endpoint
-            API_URL_prompt = "https://api-inference.huggingface.co/models/google/flan-t5-base"
-            headers_prompt = {"Authorization": "Bearer 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"}
-            prompt_api_response = requests.post(API_URL_prompt, headers=headers_prompt, json={'question': user_question, 'context': context, 'embeddings': embeddings})
-
-            if prompt_api_response.status_code == 200:
-                output = prompt_api_response.json()['answer']
-                st.write(output)
+        embeddings = OpenAIEmbeddings()
+        vectorstore = FAISS.from_texts(texts=text_chunks, embedding=embeddings)
+        llm = ChatOpenAI()
+        memory = ConversationBufferMemory(
+                    memory_key='chat_history', return_messages=True)
+        conversation_chain = ConversationalRetrievalChain.from_llm(
+                    llm=llm,
+                    retriever=vectorstore.as_retriever(),
+                    memory=memory
+                     )
+        response = chat_history({'question': user_question})
+        for i, message in enumerate(response['chat_history']):
+            if i % 2 == 0:
+                st.write(user_template.replace(
+                    "{{MSG}}", message.content), unsafe_allow_html=True)
             else:
-                st.write(f"Error occurred while retrieving the prompt answer. Status: {prompt_api_response.status_code}")
+                st.write(bot_template.replace(
+                    "{{MSG}}", message.content), unsafe_allow_html=True)
+        if "conversation" not in st.session_state:
+            conversation_chain = None
         else:
-            st.write(f"Error occurred while retrieving the embeddings. Status: {embeddings_api_response.status_code}")
-
-
-
+            conversation_chain = st.session_state.conversation
+        if "chat_history" not in st.session_state:
+            chat_history = None
+        else:
+            chat_history = st.session_state.chat_history
+        st.header("Chat with multiple PDFs :books:")
+        user_question = st.text_input("Ask a question about your documents:")
+        if user_question and conversation_chain is not None and chat_history is not None:
+            handle_userinput(user_question, chat_history)
+        st.subheader("Your documents")
+        pdf_docs = st.file_uploader(
+            "Upload your PDFs here and click on 'Process'", accept_multiple_files=True)
+        if st.button("Process"):
+            with st.spinner("Processing"):
+                # get pdf text
+                raw_text = get_pdf_text(pdf_docs)
+                # get the text chunks
+                text_chunks = get_text_chunks(raw_text)
+                # create vector store
+                vectorstore = get_vectorstore(text_chunks)
+                # create conversation chain
+                conversation_chain = get_conversation_chain(
+                    vectorstore)
+                st.session_state.conversation = conversation_chain
+                st.session_state.chat_history = conversation_chain.conversation
 
 page_names_to_funcs = {
     "Product Breakdown Structure": system_requirement,

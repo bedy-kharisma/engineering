@@ -1099,6 +1099,7 @@ def mtbf_clc(doc):
             unique_klas = merged_df['component_id'].unique()
             # Create DataFrames based on unique 'Klas' values
             dfs = {}
+            summary_df=pd.DataFrame(columns=["Nama Komponen","cluster_label","MTTF"])
             for component_id in unique_klas:
                 if choose == "MPG SPG SSPG (BS EN 15380-2) + Train NUmber + TS + Cluster" and all(col in merged_df.columns for col in ['MPG', 'SPG', 'SSPG']):
                      df_klas = merged_df[merged_df['component_id'] == component_id][['TS', 'Tanggal', 'Kereta', 'Klasifikasi Gangguan', 'Nama Komponen', 'MPG', 'SPG', 'SSPG', 'cluster_label', 'Jumlah','Delivery Date','Time Difference (hours)','Time Difference (days)']].sort_values('Tanggal')
@@ -1152,7 +1153,8 @@ def mtbf_clc(doc):
                         for j, value in enumerate(row[1:]):
                             table.cell(i + 1, j).text = str(value)
                     test(df_klas, distribution,doc)
-                    st.write(df_klas)	
+                    common_columns = list(set(summary_df.columns) & set(df_klas.columns))
+                    df_appended = pd.concat([summary_df[common_columns], df_klas[common_columns]], ignore_index=True)
                 else:
                     # Formatting the output
                     Train = "Train Number: {} - TS {}".format(train_number, ts) 
@@ -1162,7 +1164,9 @@ def mtbf_clc(doc):
                     st.subheader(Compo)
                     st.write("Information: Not Enough data to run test (minimum number of data: 3, available data {})".format(len(df_klas)))
                     df_klas['MTTF'] = ""
-                    st.write(df_klas)
+                    common_columns = list(set(summary_df.columns) & set(df_klas.columns))
+                    df_appended = pd.concat([summary_df[common_columns], df_klas[common_columns]], ignore_index=True)
+		    st.write(df_klas)
                     doc.add_heading(Train, level=1)
                     doc.add_heading(Compo, level=1)
                     doc.add_paragraph("Information: Not Enough data to run test (minimum number of data: 3, available data {})".format(len(df_klas)))
@@ -1176,7 +1180,8 @@ def mtbf_clc(doc):
                     for i, row in enumerate(df_klas.itertuples()):
                         for j, value in enumerate(row[1:]):
                             table.cell(i + 1, j).text = str(value)
-            doc_bytes = io.BytesIO()
+            st.write(df_appended)
+	    doc_bytes = io.BytesIO()
             doc.save(doc_bytes)
             doc_bytes.seek(0)
             #-----TO EDIT CLUSTERED

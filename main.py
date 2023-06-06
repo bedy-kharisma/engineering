@@ -1381,10 +1381,14 @@ def chat():
 			standards = pd.read_pickle(content)
 		for doc in source_documents:
 			first_sentence = doc.split(".")[0]
-			search_result = standards[standards["text"].str.contains(f"({first_sentence})", case=False)]
+			search_result = df_standards[df_standards["text"].str.contains(f"^{re.escape(first_sentence)}", case=False, regex=True)]
 			if not search_result.empty:
-				st.write(str(search_result["location"].tolist()))
-		    
+				locations = search_result["location"].tolist()
+				locations_string += "\n".join(locations) + "\n"
+		locations_string = locations_string.rstrip("\n")
+		st.write(locations_string)
+
+		
 page_names_to_funcs = {
     "Product Breakdown Structure": system_requirement,
     "Material Code":Matcod,

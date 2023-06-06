@@ -1184,7 +1184,7 @@ def mtbf_clc(doc):
                             table.cell(i + 1, j).text = str(value)
             summary_df = summary_df.drop_duplicates(subset="Nama komponen")
             summary_df = summary_df.reindex(columns=["Nama komponen", "cluster label", "MTTF"])
-	    st.write(summary_df)
+            st.write(summary_df)
             doc_bytes = io.BytesIO()
             doc.save(doc_bytes)
             doc_bytes.seek(0)

@@ -1181,7 +1181,7 @@ def mtbf_clc(doc):
                         for j, value in enumerate(row[1:]):
                             table.cell(i + 1, j).text = str(value)
             st.write(df_appended)
-	    doc_bytes = io.BytesIO()
+            doc_bytes = io.BytesIO()
             doc.save(doc_bytes)
             doc_bytes.seek(0)
             #-----TO EDIT CLUSTERED

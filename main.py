@@ -8,7 +8,7 @@ from dash import Dash, html, dcc, Input, Output, State, no_update
 import dash_bootstrap_components as dbc
 import  openpyxl
 import pandas as pd
-from streamlit import caching
+#from streamlit import caching
 import requests
 import joblib
 from io import BytesIO

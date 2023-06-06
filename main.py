@@ -1356,11 +1356,10 @@ def chat():
 		selected_df = selected_df.to_html(escape=False)
 		st.write(selected_df, unsafe_allow_html=True)
 		joined = ",".join(filtered_std['text'].astype(str))
-		from langchain.docstore.document import Document
-		doc = Document(page_content=joined)
 		from langchain.text_splitter import RecursiveCharacterTextSplitter
 		text_splitter = RecursiveCharacterTextSplitter(chunk_size = 1000,chunk_overlap  = 20,length_function = len,)
 		texts = text_splitter.split_text(joined)
+		st.write(texts)
 		embeddings = OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY)
 		docsearch = Chroma.from_texts(texts, embeddings, metadatas=[{"source": f"{i}-pl"} for i in range(len(texts))])
 		from langchain.chains import RetrievalQAWithSourcesChain

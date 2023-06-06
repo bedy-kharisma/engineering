@@ -1370,10 +1370,12 @@ def chat():
 		from langchain.chains.question_answering import load_qa_chain
 		qa = RetrievalQA.from_chain_type(llm=OpenAI(openai_api_key=OPENAI_API_KEY), chain_type="map_reduce", retriever=docsearch.as_retriever(),return_source_documents=True)
 		result = qa({"query": query})
-		source_documents = result["result"]["source_documents"]
 		st.write(result["result"])
+		import json
+		result_dict = json.loads(result)
+		source_documents = result_dict["result"]["source_documents"]
 		st.write(source_documents)
-
+		
 		
 page_names_to_funcs = {
     "Product Breakdown Structure": system_requirement,

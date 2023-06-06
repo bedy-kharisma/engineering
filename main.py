@@ -1162,7 +1162,7 @@ def mtbf_clc(doc):
                     st.subheader(Compo)
                     st.write("Information: Not Enough data to run test (minimum number of data: 3, available data {})".format(len(df_klas)))
                     df_klas['MTTF'] = ""
-		    st.write(df_klas)
+                    st.write(df_klas)
                     doc.add_heading(Train, level=1)
                     doc.add_heading(Compo, level=1)
                     doc.add_paragraph("Information: Not Enough data to run test (minimum number of data: 3, available data {})".format(len(df_klas)))

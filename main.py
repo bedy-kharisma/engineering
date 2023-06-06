@@ -1205,7 +1205,7 @@ def mtbf_clc(doc):
                 data=doc2_bytes.read(),
                 file_name='summary.docx')
             for element in doc.element.body:
-    		doc2.element.body.append(element)
+                doc2.element.body.append(element)
             doc_bytes = io.BytesIO()
             doc2.save(doc_bytes)
             doc_bytes.seek(0)

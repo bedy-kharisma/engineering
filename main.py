@@ -1380,7 +1380,7 @@ def chat():
 			content = BytesIO(response.content)
 			standards = pd.read_pickle(content)
 		for doc in source_documents:
-			first_sentence = doc.page_content.split(".")[0]
+			first_sentence = doc.split(".")[0]
 			search_result = standards[standards["text"].str.contains(first_sentence, case=False)]
 			if not search_result.empty:
 				st.write(search_result["location"])

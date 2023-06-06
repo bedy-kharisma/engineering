@@ -43,8 +43,6 @@ from langchain.llms import OpenAI
 from langchain.chains import RetrievalQA
 
 warnings.filterwarnings("ignore")
-#Create a word doc
-doc=Document()
 
 # Create a connection object.
 credentials = service_account.Credentials.from_service_account_info(
@@ -459,7 +457,6 @@ def Matcod():
     if response.status_code == 200:
         content = BytesIO(response.content)
         sw_df=pd.read_pickle(content) 
-
     pickle_file = 'el_df.pkl'
     file_url = 'https://raw.githubusercontent.com/bedy-kharisma/engineering/main/'+ pickle_file
     response = requests.get(file_url)
@@ -973,6 +970,7 @@ def test(df, distribution, doc):
     t = np.arange(10001)
     hr, R, PDF, MTTF, RMTTF = cases(data, distribution, t)
     st.success("Predicted failure in operation hour:"+ str(round(MTTF, 2)))
+    df_klas['MTTF'] = MTTF
     doc.add_paragraph("Predicted failure in operation hour:"+ str(round(MTTF, 2)))
     # Display the plots
     fig = plot_results(hr, R, PDF, MTTF, RMTTF,data,distribution)
@@ -1163,7 +1161,8 @@ def mtbf_clc(doc):
                     st.subheader(Train)
                     st.subheader(Compo)
                     st.write("Information: Not Enough data to run test (minimum number of data: 3, available data {})".format(len(df_klas)))
-                    st.write(df_klas)
+                    df_klas['MTTF'] = ""
+		    st.write(df_klas)
                     doc.add_heading(Train, level=1)
                     doc.add_heading(Compo, level=1)
                     doc.add_paragraph("Information: Not Enough data to run test (minimum number of data: 3, available data {})".format(len(df_klas)))
@@ -1188,6 +1187,8 @@ def mtbf_clc(doc):
     
 def MTBF():
     st.empty()
+    #Create a word doc
+    doc=Document()
     st.title("Clustering and MTBF Calculator App")
     # File upload section
     st.subheader("Upload your Gangguan XLSX file")

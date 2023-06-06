@@ -1369,7 +1369,7 @@ def chat():
 		docsearch = Chroma.from_documents(texts, embeddings)
 		from langchain.chains.question_answering import load_qa_chain
 		qa = RetrievalQA.from_chain_type(llm=OpenAI(openai_api_key=OPENAI_API_KEY), chain_type="refine", retriever=docsearch.as_retriever(),return_source_documents=True)
-		st.write(qa({"query":query}))
+		st.write(qa({"query":query})["result"])
 		
 page_names_to_funcs = {
     "Product Breakdown Structure": system_requirement,

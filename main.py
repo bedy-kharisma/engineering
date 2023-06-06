@@ -1176,8 +1176,8 @@ def mtbf_clc(doc):
                     for i, row in enumerate(df_klas.itertuples()):
                         for j, value in enumerate(row[1:]):
                             table.cell(i + 1, j).text = str(value)
-            common_columns = list(set(summary_df.columns) & set(df_klas.columns))
-            df_appended = pd.concat([summary_df[common_columns], df_klas[common_columns]], ignore_index=True)
+                common_columns = list(set(summary_df.columns) & set(df_klas.columns))
+                df_appended = pd.concat([summary_df[common_columns], df_klas[common_columns]], ignore_index=True)
             st.write(df_appended)
             doc_bytes = io.BytesIO()
             doc.save(doc_bytes)

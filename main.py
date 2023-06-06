@@ -1375,15 +1375,15 @@ def chat():
 		st.write("Sources :")
 		source_documents = [doc.page_content for doc in result["source_documents"]]
 		file_url = 'https://raw.githubusercontent.com/bedy-kharisma/engineering/main/standards.pkl'
-    		response = requests.get(file_url)
+		response = requests.get(file_url)
 		if response.status_code == 200:
 			content = BytesIO(response.content)
 			standards = pd.read_pickle(content)
 		for doc in source_documents:
-		    first_sentence = doc.page_content.split(".")[0]
-		    search_result = standards[standards["text"].str.contains(first_sentence, case=False)]
-		    if not search_result.empty:
-        		st.write(search_result["location"])
+			first_sentence = doc.page_content.split(".")[0]
+			search_result = standards[standards["text"].str.contains(first_sentence, case=False)]
+			if not search_result.empty:
+				st.write(search_result["location"])
 		    
 page_names_to_funcs = {
     "Product Breakdown Structure": system_requirement,

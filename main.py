@@ -1381,9 +1381,9 @@ def chat():
 			standards = pd.read_pickle(content)
 		for doc in source_documents:
 			first_sentence = doc.split(".")[0]
-			search_result = standards[standards["text"].str.contains(first_sentence, case=False)]
+			search_result = standards[standards["text"].str.contains(f"({first_sentence})", case=False)]
 			if not search_result.empty:
-				st.write(search_result["location"])
+				st.write(str(search_result["location"].tolist()))
 		    
 page_names_to_funcs = {
     "Product Breakdown Structure": system_requirement,

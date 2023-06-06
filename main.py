@@ -1378,7 +1378,7 @@ def chat():
 		response = requests.get(file_url)
 		if response.status_code == 200:
 			content = BytesIO(response.content)
-			standards = pd.read_pickle(content)
+			df_standards = pd.read_pickle(content)
 		for doc in source_documents:
 			first_sentence = doc.split(".")[0]
 			search_result = df_standards[df_standards["text"].str.contains(f"^{re.escape(first_sentence)}", case=False, regex=True)]

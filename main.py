@@ -1370,11 +1370,21 @@ def chat():
 		from langchain.chains.question_answering import load_qa_chain
 		qa = RetrievalQA.from_chain_type(llm=OpenAI(openai_api_key=OPENAI_API_KEY), chain_type="map_reduce", retriever=docsearch.as_retriever(),return_source_documents=True)
 		result = qa({"query": query})
-		st.write(result["result"])
+		st.write("Answer : "+str(result["result"]))
+		st.markdown("---")
+		st.write("Sources :")
 		source_documents = [doc.page_content for doc in result["source_documents"]]
+		file_url = 'https://raw.githubusercontent.com/bedy-kharisma/engineering/main/standards.pkl'
+    		response = requests.get(file_url)
+		if response.status_code == 200:
+			content = BytesIO(response.content)
+			standards = pd.read_pickle(content)
 		for doc in source_documents:
-		    st.write(doc)
-		
+		    first_sentence = doc.page_content.split(".")[0]
+		    search_result = standards[standards["text"].str.contains(first_sentence, case=False)]
+		    if not search_result.empty:
+        		st.write(search_result["location"])
+		    
 page_names_to_funcs = {
     "Product Breakdown Structure": system_requirement,
     "Material Code":Matcod,

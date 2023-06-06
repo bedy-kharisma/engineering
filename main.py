@@ -1204,15 +1204,16 @@ def mtbf_clc(doc):
                 label="Download summary docx",
                 data=doc2_bytes.read(),
                 file_name='summary.docx')
-            doc2.add_document(doc)
+            for element in doc.element.body:
+    		doc2.element.body.append(element)
             doc_bytes = io.BytesIO()
-            doc.save(doc_bytes)
+            doc2.save(doc_bytes)
             doc_bytes.seek(0)
             #-----TO EDIT CLUSTERED
             st.download_button(
-                                label="Download report docx",
-                                data=doc_bytes.read(),
-                                file_name='report.docx')
+		label="Download report docx",
+		data=doc_bytes.read(),
+		file_name='report.docx')
     
 def MTBF():
     st.empty()

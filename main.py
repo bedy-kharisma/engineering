@@ -493,7 +493,6 @@ def Matcod():
     if response.status_code == 200:
         content = BytesIO(response.content)
         piping_df=pd.read_pickle(content)
-
     pickle_file = 'cons_df.pkl'
     file_url = 'https://raw.githubusercontent.com/bedy-kharisma/engineering/main/'+ pickle_file
     response = requests.get(file_url)
@@ -512,7 +511,6 @@ def Matcod():
     if response.status_code == 200:
         content = BytesIO(response.content)
         raw_df=pd.read_pickle(content)
-
     pickle_file = 'spare_df.pkl'
     file_url = 'https://raw.githubusercontent.com/bedy-kharisma/engineering/main/'+ pickle_file
     response = requests.get(file_url)
@@ -978,7 +976,8 @@ def test(df, distribution, doc):
     st.pyplot(fig)
     fig.savefig("plot.png")
     doc.add_picture("plot.png",width=Inches(5))
-    
+    return df
+
 def remove_text_between_parentheses(text):
     if isinstance(text, str):
         pattern = r"\([^()]*\)"
@@ -1153,6 +1152,7 @@ def mtbf_clc(doc):
                         for j, value in enumerate(row[1:]):
                             table.cell(i + 1, j).text = str(value)
                     test(df_klas, distribution,doc)
+                    st.write(df_klas)	
                 else:
                     # Formatting the output
                     Train = "Train Number: {} - TS {}".format(train_number, ts) 

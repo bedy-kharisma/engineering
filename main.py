@@ -970,7 +970,7 @@ def test(df, distribution, doc):
     t = np.arange(10001)
     hr, R, PDF, MTTF, RMTTF = cases(data, distribution, t)
     st.success("Predicted failure in operation hour:"+ str(round(MTTF, 2)))
-    df_klas['MTTF'] = MTTF
+    df['MTTF'] = MTTF
     doc.add_paragraph("Predicted failure in operation hour:"+ str(round(MTTF, 2)))
     # Display the plots
     fig = plot_results(hr, R, PDF, MTTF, RMTTF,data,distribution)

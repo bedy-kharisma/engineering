@@ -1195,7 +1195,7 @@ def mtbf_clc(doc):
             for i, row in enumerate(summary_df.itertuples()):
                 for j, value in enumerate(row[1:]):
                     table.cell(i + 1, j).text = str(value)
-	    st.write(summary_df)
+            st.write(summary_df)
             doc_bytes = io.BytesIO()
             doc.save(doc_bytes)
             doc_bytes.seek(0)

@@ -1183,7 +1183,7 @@ def mtbf_clc(doc):
                         for j, value in enumerate(row[1:]):
                             table.cell(i + 1, j).text = str(value)
             summary_df = summary_df.drop_duplicates(subset="Nama komponen")
-	    summary_df = summary_df.reindex(columns=["Nama komponen", "cluster label", "MTTF"])
+            summary_df = summary_df.reindex(columns=["Nama komponen", "cluster label", "MTTF"])
 	    st.write(summary_df)
             doc_bytes = io.BytesIO()
             doc.save(doc_bytes)

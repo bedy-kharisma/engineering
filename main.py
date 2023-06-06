@@ -1359,16 +1359,12 @@ def chat():
 		from langchain.docstore.document import Document
 		doc = Document(page_content=joined)
 		from langchain.text_splitter import RecursiveCharacterTextSplitter
-		text_splitter = RecursiveCharacterTextSplitter(
-		    chunk_size = 1000,
-		    chunk_overlap  = 20,
-		    length_function = len,
-		)
+		text_splitter = RecursiveCharacterTextSplitter(chunk_size = 1000,chunk_overlap  = 20,length_function = len,)
 		texts = text_splitter.split_documents([doc])
 		embeddings = OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY)
-		docsearch = Chroma.from_documents(texts, embeddings)
-		from langchain.chains.question_answering import load_qa_chain
-		qa = RetrievalQA.from_chain_type(llm=OpenAI(openai_api_key=OPENAI_API_KEY), chain_type="stuff", retriever=docsearch.as_retriever())
+		docsearch = Chroma.from_texts(texts, embeddings, metadatas=[{"source": f"{i}-pl"} for i in range(len(texts))])
+		from langchain.chains import RetrievalQAWithSourcesChain
+		qa = RetrievalQAWithSourcesChain.from_chain_type(llm=OpenAI(openai_api_key=OPENAI_API_KEY), chain_type="stuff", retriever=docsearch.as_retriever())
 		st.write(qa.run(query))
 		
 page_names_to_funcs = {

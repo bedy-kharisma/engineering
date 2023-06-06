@@ -1360,7 +1360,7 @@ def chat():
 		doc = Document(page_content=joined)
 		from langchain.text_splitter import RecursiveCharacterTextSplitter
 		text_splitter = RecursiveCharacterTextSplitter(chunk_size = 1000,chunk_overlap  = 20,length_function = len,)
-		texts = text_splitter.split_documents([doc])
+		texts = text_splitter.split_text(joined)
 		embeddings = OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY)
 		docsearch = Chroma.from_documents(texts, embeddings, metadatas=[{"source": f"{i}-pl"} for i in range(len(texts))])
 		from langchain.chains import RetrievalQAWithSourcesChain

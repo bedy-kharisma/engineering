@@ -1153,6 +1153,7 @@ def mtbf_clc(doc):
                         for j, value in enumerate(row[1:]):
                             table.cell(i + 1, j).text = str(value)
                     test(df_klas, distribution,doc)
+                    df_klas['MTTF'] = df_klas['MTTF'].astype(str)
                     common_columns = list(set(summary_df.columns) & set(df_klas.columns))
                     summary_df = pd.concat([summary_df[common_columns], df_klas[common_columns]], ignore_index=True)
                 else:
@@ -1164,6 +1165,7 @@ def mtbf_clc(doc):
                     st.subheader(Compo)
                     st.write("Information: Not Enough data to run test (minimum number of data: 3, available data {})".format(len(df_klas)))
                     df_klas['MTTF'] = ""
+                    df_klas['MTTF'] = df_klas['MTTF'].astype(str)
                     common_columns = list(set(summary_df.columns) & set(df_klas.columns))
                     summary_df = pd.concat([summary_df[common_columns], df_klas[common_columns]], ignore_index=True)
                     st.write(df_klas)

@@ -1166,7 +1166,7 @@ def mtbf_clc(doc):
                     df_klas['MTTF'] = ""
                     common_columns = list(set(summary_df.columns) & set(df_klas.columns))
                     df_appended = pd.concat([summary_df[common_columns], df_klas[common_columns]], ignore_index=True)
-		    st.write(df_klas)
+                    st.write(df_klas)
                     doc.add_heading(Train, level=1)
                     doc.add_heading(Compo, level=1)
                     doc.add_paragraph("Information: Not Enough data to run test (minimum number of data: 3, available data {})".format(len(df_klas)))

@@ -1164,7 +1164,7 @@ def mtbf_clc(doc):
                     st.subheader(Train)
                     st.subheader(Compo)
                     st.write("Information: Not Enough data to run test (minimum number of data: 3, available data {})".format(len(df_klas)))
-                    df_klas['MTTF'] = "Not enough data to the MTBF calculation"
+                    df_klas['MTTF'] = "Not enough data"
                     df_klas['MTTF'] = df_klas['MTTF'].astype(str)
                     common_columns = list(set(summary_df.columns) & set(df_klas.columns))
                     summary_df = pd.concat([summary_df[common_columns], df_klas[common_columns]], ignore_index=True)
@@ -1182,11 +1182,12 @@ def mtbf_clc(doc):
                     for i, row in enumerate(df_klas.itertuples()):
                         for j, value in enumerate(row[1:]):
                             table.cell(i + 1, j).text = str(value)
-            summary_df = summary_df.drop_duplicates(subset="Nama Komponen")
+            summary_df = summary_df.drop_duplicates(subset="cluster_label")
             summary_df = summary_df.reindex(columns=["Nama Komponen","cluster_label","MTTF"])
-            doc.add_heading("Summary", level=1)
+            doc2=Document()		
+            doc2.add_heading("Summary", level=1)
 	    # Add the dataframe as a table
-            table = doc.add_table(summary_df.shape[0] + 1, summary_df.shape[1])
+            table = doc2.add_table(summary_df.shape[0] + 1, summary_df.shape[1])
             table.style = 'Table Grid'  # Apply table grid style
             # Add column names to the table
             for i, column_name in enumerate(summary_df.columns):
@@ -1195,7 +1196,15 @@ def mtbf_clc(doc):
             for i, row in enumerate(summary_df.itertuples()):
                 for j, value in enumerate(row[1:]):
                     table.cell(i + 1, j).text = str(value)
+            doc2_bytes = io.BytesIO()
+            doc2.save(doc2_bytes)
+            doc2_bytes.seek(0)		
             st.write(summary_df)
+            st.download_button(
+                label="Download summary docx",
+                data=doc2_bytes.read(),
+                file_name='summary.docx')
+            doc2.add_document(doc)
             doc_bytes = io.BytesIO()
             doc.save(doc_bytes)
             doc_bytes.seek(0)

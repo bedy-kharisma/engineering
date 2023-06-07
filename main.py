@@ -1391,7 +1391,7 @@ def req():
 	unique_values = set(df["location"].str.split("/").str[1])
 	std_type = st.multiselect('Select Standards',unique_values,unique_values)
 	component_name = st.text_input("insert component's name","Vehicle body")
-	prompt = """
+	query = """
 		You are a quality control engineer responsible for ensuring compliance with industry standards for a {component}. 
 		Your task is to develop a set of parameters that all instances of the {component} must meet in order to comply with the given standards.
 		Write a detailed description of {component} and the specific standards that apply to it. 
@@ -1413,21 +1413,12 @@ def req():
 		texts = text_splitter.split_documents([doc])
 		embeddings = OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY)
 		docsearch = Chroma.from_documents(texts, embeddings)
-		
-		prompt_template = LLMChainTemplate()
-		formatted_prompt = prompt_template.format_prompt(component=component_name)
-
-		chain = RetrievalQAWithSourcesChain.from_chain_type(
-			llm=OpenAI(openai_api_key=OPENAI_API_KEY),
-			chain_type="stuff",
-			retriever=docsearch.as_retriever(),
-			chain_type_kwargs={"prompt": formatted_prompt},
-			)
-		st.write( chain.generate())
-		#result = chain({"query": prompt})
-		#st.write("Answer :")
-		#st.write(result["result"])
-		#st.markdown("---")
+		qa = RetrievalQA.from_chain_type(llm=OpenAI(openai_api_key=OPENAI_API_KEY), chain_type="stuff", retriever=docsearch.as_retriever(),return_source_documents=True)
+		result = qa({"query": query})
+		result = chain({"query": prompt})
+		st.write("Answer :")
+		st.write(result["result"])
+		st.markdown("---")
 		st.write("Sources :")
 		source_documents = [doc.page_content for doc in result["source_documents"]]
 		unique_sources = pd.concat([df[df["text"].str.contains(max(doc.split("."), key=len).strip(), case=False)]["location"] for doc in source_documents]).unique()

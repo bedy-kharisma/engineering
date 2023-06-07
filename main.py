@@ -1380,7 +1380,7 @@ def chat():
 			content = BytesIO(response.content)
 			df_standards = pd.read_pickle(content)
 		for doc in source_documents:
-			first_sentence = doc.split(".")max(sentences, key=len).strip()
+			first_sentence = max(doc.split("."), key=len).strip()
 			try:
 				search_result = df_standards[df_standards["text"].str.contains(first_sentence, case=False)]
 				if not search_result.empty:

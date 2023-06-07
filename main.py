@@ -1395,7 +1395,7 @@ def req():
 	df = df[df['num_chars'] != 0]
 	unique_values = set(df["location"].str.split("/").str[1])
 	std_type = st.multiselect('Select Standards',unique_values,unique_values)
-	component_name = st.text_input("insert component's name","Vehicle body")
+	component = st.text_input("insert component's name","Vehicle body")
 	from langchain.prompts import PromptTemplate, StringPromptTemplate
 	template = """
 		You are a quality control engineer responsible for ensuring compliance with industry standards for a {component}. 
@@ -1405,7 +1405,7 @@ def req():
 		Your response:
 		"""
 	prompt = PromptTemplate.from_template(template)
-	prompt_template=prompt.format(component=component_name)
+	prompt_template=prompt.format(component=component)
 	if st.button("Process"):
 		filtered_std  = df[df["location"].apply(lambda x: any(item in x for item in std_type))]
 		filtered_std = filtered_std[filtered_std['text'].str.contains(component_name, flags=re.IGNORECASE)]
@@ -1425,7 +1425,7 @@ def req():
 			docsearch = Chroma.from_documents(texts, embeddings)
 			from langchain.chat_models import ChatOpenAI
 			from langchain.chains import LLMChain
-			qa = RetrievalQAWithSourcesChain.from_chain_type(llm=OpenAI(openai_api_key=OPENAI_API_KEY), chain_type="stuff", retriever=docsearch.as_retriever(),return_source_documents=True,chain_type_kwargs={"prompt": PromptTemplate})
+			qa = RetrievalQAWithSourcesChain.from_chain_type(llm=OpenAI(openai_api_key=OPENAI_API_KEY), chain_type="stuff", retriever=docsearch.as_retriever(),return_source_documents=True,chain_type_kwargs={"prompt": PromptTemplate(template=template,input_variables=["component"])})
 			result = qa.run(component_name)
 			st.write("Answer :")
 			st.write(result["result"])

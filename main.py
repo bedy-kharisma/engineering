@@ -1425,7 +1425,7 @@ def req():
 			docsearch = Chroma.from_documents(texts, embeddings)
 			from langchain.chat_models import ChatOpenAI
 			from langchain.chains import LLMChain
-			qa = RetrievalQAWithSourcesChain.from_chain_type(llm=OpenAI(openai_api_key=OPENAI_API_KEY), chain_type="stuff", retriever=docsearch.as_retriever(),return_source_documents=True,prompt=prompt_template)
+			qa = RetrievalQAWithSourcesChain.from_chain_type(llm=OpenAI(openai_api_key=OPENAI_API_KEY), chain_type="stuff", retriever=docsearch.as_retriever(),return_source_documents=True,chain_type_kwargs={"prompt": PromptTemplate})
 			result = qa.run(component_name)
 			st.write("Answer :")
 			st.write(result["result"])

@@ -1361,23 +1361,26 @@ def chat():
 		selected_df['link'] = selected_df['id'].apply(lambda x: f'<a target="_blank" href="https://drive.google.com/file/d/{x}/view">{x}</a>')
 		selected_df = selected_df.drop("id", axis=1)
 		selected_df = selected_df.to_html(escape=False)
-		st.write(selected_df, unsafe_allow_html=True)
-		joined = ",".join(filtered_std['text'].astype(str))
-		doc = Document(page_content=joined)
-		text_splitter = RecursiveCharacterTextSplitter(chunk_size = 1000,chunk_overlap  = 20,length_function = len)
-		texts = text_splitter.split_documents([doc])
-		embeddings = OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY)
-		docsearch = Chroma.from_documents(texts, embeddings)
-		qa = RetrievalQA.from_chain_type(llm=OpenAI(openai_api_key=OPENAI_API_KEY), chain_type="map_rerank", retriever=docsearch.as_retriever(),return_source_documents=True)
-		result = qa({"query": query})
-		st.write("Answer :")
-		st.write(result["result"])
-		st.markdown("---")
-		st.write("Sources :")
-		source_documents = [doc.page_content for doc in result["source_documents"]]
-		unique_sources = pd.concat([df[df["text"].str.contains(max(doc.split("."), key=len).strip(), case=False)]["location"] for doc in source_documents]).unique()
-		locations_string = "\n".join(unique_sources)
-		st.write(locations_string)
+		if len(selected_df) > 0:
+			st.write(selected_df, unsafe_allow_html=True)
+			joined = ",".join(filtered_std['text'].astype(str))
+			doc = Document(page_content=joined)
+			text_splitter = RecursiveCharacterTextSplitter(chunk_size = 1000,chunk_overlap  = 20,length_function = len)
+			texts = text_splitter.split_documents([doc])
+			embeddings = OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY)
+			docsearch = Chroma.from_documents(texts, embeddings)
+			qa = RetrievalQA.from_chain_type(llm=OpenAI(openai_api_key=OPENAI_API_KEY), chain_type="map_rerank", retriever=docsearch.as_retriever(),return_source_documents=True)
+			result = qa({"query": query})
+			st.write("Answer :")
+			st.write(result["result"])
+			st.markdown("---")
+			st.write("Sources :")
+			source_documents = [doc.page_content for doc in result["source_documents"]]
+			unique_sources = pd.concat([df[df["text"].str.contains(max(doc.split("."), key=len).strip(), case=False)]["location"] for doc in source_documents]).unique()
+			locations_string = "\n".join(unique_sources)
+			st.write(locations_string)
+		else:
+			st.write("No data contain specific keyword")
 
 def req():
 	st.empty()
@@ -1408,25 +1411,28 @@ def req():
 		selected_df['link'] = selected_df['id'].apply(lambda x: f'<a target="_blank" href="https://drive.google.com/file/d/{x}/view">{x}</a>')
 		selected_df = selected_df.drop("id", axis=1)
 		selected_df = selected_df.to_html(escape=False)
-		st.write(selected_df, unsafe_allow_html=True)
-		joined = ",".join(filtered_std['text'].astype(str))
-		doc = Document(page_content=joined)
-		text_splitter = RecursiveCharacterTextSplitter(chunk_size = 1000,chunk_overlap  = 20,length_function = len)
-		texts = text_splitter.split_documents([doc])
-		embeddings = OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY)
-		docsearch = Chroma.from_documents(texts, embeddings)
-		from langchain.chat_models import ChatOpenAI
-		from langchain.chains import LLMChain
-		qa = RetrievalQA.from_chain_type(llm=OpenAI(openai_api_key=OPENAI_API_KEY), chain_type="stuff", retriever=docsearch.as_retriever(),return_source_documents=True,prompt=prompt_template)
-		result = qa.run(component_name)
-		st.write("Answer :")
-		st.write(result["result"])
-		st.markdown("---")
-		st.write("Sources :")
-		source_documents = [doc.page_content for doc in result["source_documents"]]
-		unique_sources = pd.concat([df[df["text"].str.contains(max(doc.split("."), key=len).strip(), case=False)]["location"] for doc in source_documents]).unique()
-		locations_string = "\n".join(unique_sources)
-		st.write(locations_string)
+		if len(selected_df) > 0:
+			st.write(selected_df, unsafe_allow_html=True)
+			joined = ",".join(filtered_std['text'].astype(str))
+			doc = Document(page_content=joined)
+			text_splitter = RecursiveCharacterTextSplitter(chunk_size = 1000,chunk_overlap  = 20,length_function = len)
+			texts = text_splitter.split_documents([doc])
+			embeddings = OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY)
+			docsearch = Chroma.from_documents(texts, embeddings)
+			from langchain.chat_models import ChatOpenAI
+			from langchain.chains import LLMChain
+			qa = RetrievalQAWithSourcesChain.from_chain_type(llm=OpenAI(openai_api_key=OPENAI_API_KEY), chain_type="stuff", retriever=docsearch.as_retriever(),return_source_documents=True,prompt=prompt_template)
+			result = qa.run(component_name)
+			st.write("Answer :")
+			st.write(result["result"])
+			st.markdown("---")
+			st.write("Sources :")
+			source_documents = [doc.page_content for doc in result["source_documents"]]
+			unique_sources = pd.concat([df[df["text"].str.contains(max(doc.split("."), key=len).strip(), case=False)]["location"] for doc in source_documents]).unique()
+			locations_string = "\n".join(unique_sources)
+			st.write(locations_string)
+		else:
+			st.write("No standards contain specific keyword")
 st.empty()		
 page_names_to_funcs = {
     "Product Breakdown Structure": system_requirement,

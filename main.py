@@ -1375,15 +1375,10 @@ def chat():
 		st.write("Sources :")
 		source_documents = [doc.page_content for doc in result["source_documents"]]
 		my_array = []
-		for doc in source_documents:
-			first_sentence = max(doc.split("."), key=len).strip()
-			search_result = df[df["text"].str.contains(first_sentence, case=False)]
-			pd.set_option("display.max_colwidth", None)
-			sources = search_result["location"].to_string(index=False, header=False)
-			my_array.append(sources)
-		unique_sources = pd.unique(my_array)
-		st.write(unique_sources.to_string(index=False, header=False))
+		unique_sources = pd.concat([df[df["text"].str.contains(max(doc.split("."), key=len).strip(), case=False)]["location"] for doc in source_documents]).unique()
+		st.write(unique_sources)
 
+		
 					
 st.empty()		
 page_names_to_funcs = {

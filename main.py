@@ -1340,7 +1340,10 @@ def chat():
 	df['num_chars'] = df['text'].apply(lambda x: len(x))
 	df = df[df['num_chars'] != 0]
 	# Choose a topic
-	st.write("""get your open ai api key [here](https://platform.openai.com/account/api-keys)""")
+	st.write("""""This App uses AI, though sometimes it provides correct answer, sometimes it may not. 
+		Always use your own discretion.
+		This AI only fit for a short question answering 
+		Get your open ai api key [here](https://platform.openai.com/account/api-keys)""")
 	OPENAI_API_KEY=st.text_input("insert openai api",type="password")
 	unique_values = set(df["location"].str.split("/").str[1])
 	std_type = st.multiselect('Select Standards',unique_values,unique_values)
@@ -1359,11 +1362,7 @@ def chat():
 		from langchain.docstore.document import Document
 		doc = Document(page_content=joined)
 		from langchain.text_splitter import RecursiveCharacterTextSplitter
-		text_splitter = RecursiveCharacterTextSplitter(
-		    chunk_size = 1000,
-		    chunk_overlap  = 20,
-		    length_function = len,
-		)
+		text_splitter = RecursiveCharacterTextSplitter(chunk_size = 1000,chunk_overlap  = 20,length_function = len)
 		texts = text_splitter.split_documents([doc])
 		embeddings = OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY)
 		docsearch = Chroma.from_documents(texts, embeddings)
@@ -1379,7 +1378,6 @@ def chat():
 		locations_string = "\n".join(unique_sources)
 		st.write(locations_string)
 
-		
 					
 st.empty()		
 page_names_to_funcs = {
@@ -1391,8 +1389,8 @@ page_names_to_funcs = {
     "Standards finder":Standards,
     "Possible Supplier":Supplier,
     "Component Clustering & MTBF Calculator":MTBF,
-    "Talk To Your Standards":chat
-    
+    "Talk To Your Standards":chat,
+    "Requirements for each component":req
     }
 
 selected_page = st.sidebar.radio("Select a page", page_names_to_funcs.keys())

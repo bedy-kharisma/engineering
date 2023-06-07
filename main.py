@@ -1368,7 +1368,7 @@ def chat():
 		embeddings = OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY)
 		docsearch = Chroma.from_documents(texts, embeddings)
 		from langchain.chains.question_answering import load_qa_chain
-		qa = RetrievalQA.from_chain_type(llm=OpenAI(openai_api_key=OPENAI_API_KEY), chain_type="map_reduce", retriever=docsearch.as_retriever(),return_source_documents=True)
+		qa = RetrievalQA.from_chain_type(llm=OpenAI(openai_api_key=OPENAI_API_KEY), chain_type="map_rerank", retriever=docsearch.as_retriever(),return_source_documents=True)
 		result = qa({"query": query})
 		st.write("Answer : "+str(result["result"]))
 		st.markdown("---")

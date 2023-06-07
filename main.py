@@ -1340,8 +1340,7 @@ def chat():
 	df['num_chars'] = df['text'].apply(lambda x: len(x))
 	df = df[df['num_chars'] != 0]
 	# Choose a topic
-	st.write("""""This App uses AI, though sometimes it provides correct answer, sometimes it may not. 
-		Always use your own discretion.
+	st.write("""This App uses AI, though sometimes it provides correct answer, sometimes it may not. Always use your own discretion.
 		This AI only fit for a short question answering 
 		This AI uses paid API, get your openai api key [here](https://platform.openai.com/account/api-keys)""")
 	OPENAI_API_KEY=st.text_input("insert openai api",type="password")
@@ -1378,7 +1377,52 @@ def chat():
 		locations_string = "\n".join(unique_sources)
 		st.write(locations_string)
 
-					
+def req():
+	st.empty()
+	st.write("""This App uses AI, though sometimes it provides correct answer, sometimes it may not. Always use your own discretion.
+		This AI will gather information from selected standards and provides requrements each component must comply
+		This AI uses paid API, get your openai api key [here](https://platform.openai.com/account/api-keys)""")
+	OPENAI_API_KEY=st.text_input("insert openai api",type="password")
+	df = pd.read_pickle('./standards.pkl')
+	df['num_chars'] = df['text'].apply(lambda x: len(x))
+	df = df[df['num_chars'] != 0]
+	unique_values = set(df["location"].str.split("/").str[1])
+	std_type = st.multiselect('Select Standards',unique_values,unique_values)
+	component_name = st.text_input("insert component's name","Vehicle body")
+	prompt = """
+		You are a quality control engineer responsible for ensuring compliance with industry standards for a {component}. 
+		Your task is to develop a set of parameters that all instances of the {component} must meet in order to comply with the given standards.
+		Write a detailed description of {component} and the specific standards that apply to it. 
+		Outline the key parameters that must be considered and provide a clear explanation of how each parameter contributes to compliance. 
+		"""
+	formatted_prompt = prompt.format(component=component_name)
+	if st.button("Process"):
+		filtered_std  = df[df["location"].apply(lambda x: any(item in x for item in std_type))]
+		filtered_std = filtered_std[filtered_std['text'].str.contains(component_name, flags=re.IGNORECASE)]
+		selected_df = filtered_std[["location", "name", "id"]]
+		selected_df['link'] = selected_df['id'].apply(lambda x: f'<a target="_blank" href="https://drive.google.com/file/d/{x}/view">{x}</a>')
+		selected_df = selected_df.drop("id", axis=1)
+		selected_df = selected_df.to_html(escape=False)
+		st.write(selected_df, unsafe_allow_html=True)
+		joined = ",".join(filtered_std['text'].astype(str))
+		from langchain.docstore.document import Document
+		doc = Document(page_content=joined)
+		from langchain.text_splitter import RecursiveCharacterTextSplitter
+		text_splitter = RecursiveCharacterTextSplitter(chunk_size = 1000,chunk_overlap  = 20,length_function = len)
+		texts = text_splitter.split_documents([doc])
+		embeddings = OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY)
+		docsearch = Chroma.from_documents(texts, embeddings)
+		from langchain.chains.question_answering import load_qa_chain
+		qa = RetrievalQA.from_chain_type(llm=OpenAI(openai_api_key=OPENAI_API_KEY), chain_type="map_rerank", retriever=docsearch.as_retriever(),return_source_documents=True)
+		result = qa({"query": query})
+		st.write("Answer :")
+		st.write(result["result"])
+		st.markdown("---")
+		st.write("Sources :")
+		source_documents = [doc.page_content for doc in result["source_documents"]]
+		unique_sources = pd.concat([df[df["text"].str.contains(max(doc.split("."), key=len).strip(), case=False)]["location"] for doc in source_documents]).unique()
+		locations_string = "\n".join(unique_sources)
+		st.write(locations_string)
 st.empty()		
 page_names_to_funcs = {
     "Product Breakdown Structure": system_requirement,
@@ -1390,7 +1434,7 @@ page_names_to_funcs = {
     "Possible Supplier":Supplier,
     "Component Clustering & MTBF Calculator":MTBF,
     "Talk To Your Standards":chat,
-    #"Requirements for each component":req
+    "Requirements for each component":req
     }
 
 selected_page = st.sidebar.radio("Select a page", page_names_to_funcs.keys())

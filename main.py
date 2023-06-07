@@ -1382,7 +1382,7 @@ def chat():
 			sources = search_result["location"].to_string(index=False, header=False)
 			my_array.append(sources)
 		unique_sources = pd.unique(my_array)
-		st.write(unique_sources)
+		st.write(unique_sources.to_string(index=False, header=False))
 
 					
 st.empty()		

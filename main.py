@@ -8,7 +8,6 @@ from dash import Dash, html, dcc, Input, Output, State, no_update
 import dash_bootstrap_components as dbc
 import  openpyxl
 import pandas as pd
-#from streamlit import caching
 import requests
 import joblib
 from io import BytesIO
@@ -1336,6 +1335,7 @@ def MTBF():
 	
 ##-- CHAT	
 def chat():
+	st.empty()
 	df = pd.read_pickle('./standards.pkl')
 	df['num_chars'] = df['text'].apply(lambda x: len(x))
 	df = df[df['num_chars'] != 0]
@@ -1380,15 +1380,19 @@ def chat():
 			content = BytesIO(response.content)
 			df_standards = pd.read_pickle(content)
 		for doc in source_documents:
-			first_sentence = doc.split(".")[0]
-			search_result = df_standards[df_standards["text"].str.contains(f"^{re.escape(first_sentence)}", case=False, regex=True)]
-			if not search_result.empty:
-				locations = search_result["location"].tolist()
-				locations_string += "\n".join(locations) + "\n"
-				locations_string = locations_string.rstrip("\n")
-				st.write(locations_string)
-
-		
+			first_sentence = doc.split(".")max(sentences, key=len).strip()
+			try:
+				search_result = df_standards[df_standards["text"].str.contains(first_sentence, case=False)]
+				if not search_result.empty:
+					locations = search_result["location"].tolist()
+					locations_string += "\n".join(locations) + "\n"
+	
+			except:
+				pass
+			locations_string = locations_string.rstrip("\n")
+			st.write(locations_string)
+					
+st.empty()		
 page_names_to_funcs = {
     "Product Breakdown Structure": system_requirement,
     "Material Code":Matcod,

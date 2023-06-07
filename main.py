@@ -1415,6 +1415,7 @@ def req():
 		
 		st.write(selected_df.shape[0])
 		if selected_df.shape[0]>0:
+			selected_df=selected_df.head(5)
 			selected_df = selected_df.to_html(escape=False)
 			st.write(selected_df, unsafe_allow_html=True)
 			joined = ",".join(filtered_std['text'].astype(str))

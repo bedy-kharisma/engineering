@@ -1384,64 +1384,7 @@ def chat():
 		else:
 			st.write("No data contain specific keyword")
 
-def req():
-	st.empty()
-	st.write("""This App uses AI, though sometimes it provides correct answer, sometimes it may not. Always use your own discretion.
-		This AI will gather information from selected standards and provides requrements each component must comply
-		This AI uses paid API, get your openai api key [here](https://platform.openai.com/account/api-keys)""")
-	OPENAI_API_KEY=st.text_input("insert openai api",type="password")
-	df = pd.read_pickle('./standards.pkl')
-	df['num_chars'] = df['text'].apply(len)
-	df = df[df['num_chars'] != 0]
-	unique_values = set(df["location"].str.split("/").str[1])
-	std_type = st.multiselect('Select Standards',unique_values,unique_values)
-	component = st.text_input("insert component's name","Vehicle body")
-	from langchain.prompts import PromptTemplate, StringPromptTemplate
-	template = """
-		{summaries}
-		{question}
-		"""
-	question = """
-		You are a quality control engineer responsible for ensuring compliance with industry standards for a {component}. 
-		Your task is to develop a set of parameters that all instances of the {component} must meet in order to comply with the given standards.
-		Write a detailed description of {component} and the specific standards that apply to it. 
-		Outline the key parameters that must be considered and provide a clear explanation of how each parameter contributes to compliance.
-		Your response:
-		"""
-	prompt = PromptTemplate.from_template(template)
-	question=prompt.format(component=component)
-	if st.button("Process"):
-		filtered_std  = df[df["location"].apply(lambda x: any(item in x for item in std_type))]
-		filtered_std = filtered_std[filtered_std['text'].str.contains(component, flags=re.IGNORECASE)]
-		selected_df = filtered_std[["location", "name", "id"]]
-		selected_df['link'] = selected_df['id'].apply(lambda x: f'<a target="_blank" href="https://drive.google.com/file/d/{x}/view">{x}</a>')
-		selected_df = selected_df.drop("id", axis=1)
-		
-		st.write(selected_df.shape[0])
-		if selected_df.shape[0]>0:
-			selected_df=selected_df.head(5)
-			selected_df = selected_df.to_html(escape=False)
-			st.write(selected_df, unsafe_allow_html=True)
-			joined = ",".join(filtered_std['text'].astype(str))
-			doc = Document(page_content=joined)
-			text_splitter = RecursiveCharacterTextSplitter(chunk_size = 1000,chunk_overlap  = 20,length_function = len)
-			texts = text_splitter.split_documents([doc])
-			embeddings = OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY)
-			docsearch = Chroma.from_documents(texts, embeddings)
-			from langchain.chat_models import ChatOpenAI
-			from langchain.chains import LLMChain
-			qa = RetrievalQAWithSourcesChain.from_chain_type(llm=OpenAI(openai_api_key=OPENAI_API_KEY), chain_type="stuff", retriever=docsearch.as_retriever(),return_source_documents=True,chain_type_kwargs={"prompt": PromptTemplate(template=template,input_variables=["summaries", "question"])})
-			result = qa.run(component_name)
-			st.write("Answer :")
-			st.write(result["result"])
-			st.markdown("---")
-			st.write("Sources :")
-			source_documents = [doc.page_content for doc in result["source_documents"]]
-			unique_sources = pd.concat([df[df["text"].str.contains(max(doc.split("."), key=len).strip(), case=False)]["location"] for doc in source_documents]).unique()
-			locations_string = "\n".join(unique_sources)
-			st.write(locations_string)
-		else:
-			st.write("No standards contain specific keyword")
+
 st.empty()		
 page_names_to_funcs = {
     "Product Breakdown Structure": system_requirement,
@@ -1453,7 +1396,6 @@ page_names_to_funcs = {
     "Possible Supplier":Supplier,
     "Component Clustering & MTBF Calculator":MTBF,
     "Talk To Your Standards":chat,
-    #"Requirements for each component":req
     }
 
 selected_page = st.sidebar.radio("Select a page", page_names_to_funcs.keys())

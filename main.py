@@ -40,11 +40,7 @@ from langchain.vectorstores import Chroma
 from langchain.text_splitter import CharacterTextSplitter
 from langchain.llms import OpenAI
 from langchain.chains import RetrievalQA
-#from langchain.docstore.document import Document
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.chains import RetrievalQAWithSourcesChain
-from langchain.chains.question_answering import load_qa_chain
-from langchain.prompts import PromptTemplate
 
 warnings.filterwarnings("ignore")
 

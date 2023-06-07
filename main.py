@@ -40,6 +40,10 @@ from langchain.vectorstores import Chroma
 from langchain.text_splitter import CharacterTextSplitter
 from langchain.llms import OpenAI
 from langchain.chains import RetrievalQA
+from langchain.docstore.document import Document
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.chains import RetrievalQAWithSourcesChain
+from langchain.chains.question_answering import load_qa_chain
 
 warnings.filterwarnings("ignore")
 
@@ -1358,14 +1362,11 @@ def chat():
 		selected_df = selected_df.to_html(escape=False)
 		st.write(selected_df, unsafe_allow_html=True)
 		joined = ",".join(filtered_std['text'].astype(str))
-		from langchain.docstore.document import Document
 		doc = Document(page_content=joined)
-		from langchain.text_splitter import RecursiveCharacterTextSplitter
 		text_splitter = RecursiveCharacterTextSplitter(chunk_size = 1000,chunk_overlap  = 20,length_function = len)
 		texts = text_splitter.split_documents([doc])
 		embeddings = OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY)
 		docsearch = Chroma.from_documents(texts, embeddings)
-		from langchain.chains.question_answering import load_qa_chain
 		qa = RetrievalQA.from_chain_type(llm=OpenAI(openai_api_key=OPENAI_API_KEY), chain_type="map_rerank", retriever=docsearch.as_retriever(),return_source_documents=True)
 		result = qa({"query": query})
 		st.write("Answer :")
@@ -1384,7 +1385,7 @@ def req():
 		This AI uses paid API, get your openai api key [here](https://platform.openai.com/account/api-keys)""")
 	OPENAI_API_KEY=st.text_input("insert openai api",type="password")
 	df = pd.read_pickle('./standards.pkl')
-	df['num_chars'] = df['text'].apply(lambda x: len(x))
+	df['num_chars'] = df['text'].apply(len)
 	df = df[df['num_chars'] != 0]
 	unique_values = set(df["location"].str.split("/").str[1])
 	std_type = st.multiselect('Select Standards',unique_values,unique_values)
@@ -1395,7 +1396,7 @@ def req():
 		Write a detailed description of {component} and the specific standards that apply to it. 
 		Outline the key parameters that must be considered and provide a clear explanation of how each parameter contributes to compliance. 
 		"""
-	formatted_prompt = prompt.format(component=component_name)
+	formatted_prompt = prompt.format(**{'component': component_name})
 	if st.button("Process"):
 		filtered_std  = df[df["location"].apply(lambda x: any(item in x for item in std_type))]
 		filtered_std = filtered_std[filtered_std['text'].str.contains(component_name, flags=re.IGNORECASE)]
@@ -1405,21 +1406,18 @@ def req():
 		selected_df = selected_df.to_html(escape=False)
 		st.write(selected_df, unsafe_allow_html=True)
 		joined = ",".join(filtered_std['text'].astype(str))
-		from langchain.docstore.document import Document
 		doc = Document(page_content=joined)
-		from langchain.text_splitter import RecursiveCharacterTextSplitter
 		text_splitter = RecursiveCharacterTextSplitter(chunk_size = 1000,chunk_overlap  = 20,length_function = len)
 		texts = text_splitter.split_documents([doc])
 		embeddings = OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY)
 		docsearch = Chroma.from_documents(texts, embeddings)
-		from langchain.chains import RetrievalQAWithSourcesChain
 		chain = RetrievalQAWithSourcesChain.from_chain_type(
-			    llm=OpenAI(openai_api_key=OPENAI_API_KEY),
-			    chain_type="stuff",
-			    retriever=docsearch.as_retriever(),
-			    chain_type_kwargs={"prompt": formatted_prompt},
+			llm=OpenAI(openai_api_key=OPENAI_API_KEY),
+			chain_type="stuff",
+			retriever=docsearch.as_retriever(),
+			chain_type_kwargs={"prompt": formatted_prompt},
 			)
-		st.write(chain)
+		st.write( chain.generate())
 		#result = chain({"query": prompt})
 		#st.write("Answer :")
 		#st.write(result["result"])

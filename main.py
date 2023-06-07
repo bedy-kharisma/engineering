@@ -1415,7 +1415,6 @@ def req():
 		docsearch = Chroma.from_documents(texts, embeddings)
 		qa = RetrievalQA.from_chain_type(llm=OpenAI(openai_api_key=OPENAI_API_KEY), chain_type="stuff", retriever=docsearch.as_retriever(),return_source_documents=True)
 		result = qa({"query": query})
-		result = chain({"query": prompt})
 		st.write("Answer :")
 		st.write(result["result"])
 		st.markdown("---")

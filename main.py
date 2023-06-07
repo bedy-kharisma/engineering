@@ -1374,9 +1374,9 @@ def chat():
 		st.markdown("---")
 		st.write("Sources :")
 		source_documents = [doc.page_content for doc in result["source_documents"]]
-		my_array = []
 		unique_sources = pd.concat([df[df["text"].str.contains(max(doc.split("."), key=len).strip(), case=False)]["location"] for doc in source_documents]).unique()
-		st.write(unique_sources)
+		locations_string = "\n".join(unique_sources)
+		st.write(locations_string)
 
 		
 					

@@ -44,7 +44,7 @@ from langchain.docstore.document import Document
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.chains import RetrievalQAWithSourcesChain
 from langchain.chains.question_answering import load_qa_chain
-
+from langchain.prompts import PromptTemplate
 warnings.filterwarnings("ignore")
 
 # Create a connection object.
@@ -1396,7 +1396,8 @@ def req():
 		Write a detailed description of {component} and the specific standards that apply to it. 
 		Outline the key parameters that must be considered and provide a clear explanation of how each parameter contributes to compliance. 
 		"""
-	prompt = prompt_template.format(component=component_name)
+	formatted_prompt = prompt_template.format_prompt(component=component_name)
+
 	if st.button("Process"):
 		filtered_std  = df[df["location"].apply(lambda x: any(item in x for item in std_type))]
 		filtered_std = filtered_std[filtered_std['text'].str.contains(component_name, flags=re.IGNORECASE)]
@@ -1415,7 +1416,7 @@ def req():
 			llm=OpenAI(openai_api_key=OPENAI_API_KEY),
 			chain_type="stuff",
 			retriever=docsearch.as_retriever(),
-			chain_type_kwargs={"prompt": {"text": prompt}},
+			formatted_prompt = prompt_template.format_prompt(component=component_name)
 			)
 		st.write( chain.generate())
 		#result = chain({"query": prompt})

@@ -45,6 +45,7 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.chains import RetrievalQAWithSourcesChain
 from langchain.chains.question_answering import load_qa_chain
 from langchain.prompts import PromptTemplate
+from langchain.templates import LLMChainTemplate
 warnings.filterwarnings("ignore")
 
 # Create a connection object.
@@ -1412,11 +1413,15 @@ def req():
 		texts = text_splitter.split_documents([doc])
 		embeddings = OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY)
 		docsearch = Chroma.from_documents(texts, embeddings)
+		
+		prompt_template = LLMChainTemplate()
+    		formatted_prompt = prompt_template.format_prompt(component=component_name)
+
 		chain = RetrievalQAWithSourcesChain.from_chain_type(
 			llm=OpenAI(openai_api_key=OPENAI_API_KEY),
 			chain_type="stuff",
 			retriever=docsearch.as_retriever(),
-			chain_type_kwargs={"prompt": {"text": formatted_prompt}},
+			chain_type_kwargs={"prompt": formatted_prompt},
 			)
 		st.write( chain.generate())
 		#result = chain({"query": prompt})

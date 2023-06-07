@@ -1391,14 +1391,16 @@ def req():
 	unique_values = set(df["location"].str.split("/").str[1])
 	std_type = st.multiselect('Select Standards',unique_values,unique_values)
 	component_name = st.text_input("insert component's name","Vehicle body")
-	prompt = """
+	from langchain.prompts import PromptTemplate, StringPromptTemplate
+	template = """
 		You are a quality control engineer responsible for ensuring compliance with industry standards for a {component}. 
 		Your task is to develop a set of parameters that all instances of the {component} must meet in order to comply with the given standards.
 		Write a detailed description of {component} and the specific standards that apply to it. 
-		Outline the key parameters that must be considered and provide a clear explanation of how each parameter contributes to compliance. 
+		Outline the key parameters that must be considered and provide a clear explanation of how each parameter contributes to compliance.
+		Your response:
 		"""
-	query = prompt.format(component=component_name)
-
+	prompt = PromptTemplate.from_template(template)
+	prompt_template=prompt.format(component=component_name)
 	if st.button("Process"):
 		filtered_std  = df[df["location"].apply(lambda x: any(item in x for item in std_type))]
 		filtered_std = filtered_std[filtered_std['text'].str.contains(component_name, flags=re.IGNORECASE)]
@@ -1413,8 +1415,10 @@ def req():
 		texts = text_splitter.split_documents([doc])
 		embeddings = OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY)
 		docsearch = Chroma.from_documents(texts, embeddings)
-		qa = RetrievalQA.from_chain_type(llm=OpenAI(openai_api_key=OPENAI_API_KEY), chain_type="stuff", retriever=docsearch.as_retriever(),return_source_documents=True)
-		result = qa({"query": query})
+		from langchain.chat_models import ChatOpenAI
+		from langchain.chains import LLMChain
+		qa = RetrievalQA.from_chain_type(llm=OpenAI(openai_api_key=OPENAI_API_KEY), chain_type="stuff", retriever=docsearch.as_retriever(),return_source_documents=True,prompt=prompt_template)
+		result = qa.run(component_name)
 		st.write("Answer :")
 		st.write(result["result"])
 		st.markdown("---")

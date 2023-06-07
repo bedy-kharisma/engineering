@@ -1373,18 +1373,11 @@ def chat():
 		st.write("Answer : "+str(result["result"]))
 		st.markdown("---")
 		st.write("Sources :")
-		source_documents = [doc.page_content for doc in result["source_documents"]]
-		file_url = 'https://raw.githubusercontent.com/bedy-kharisma/engineering/main/standards.pkl'
-		response = requests.get(file_url)
-		if response.status_code == 200:
-			content = BytesIO(response.content)
-			df_standards = pd.read_pickle(content)
 		for doc in source_documents:
 			first_sentence = max(doc.split("."), key=len).strip()
 			st.write(first_sentence)
 			try:
-				escaped_sentence = re.escape(first_sentence)
-				search_result = df_standards[df_standards["text"].str.contains(escaped_sentence, case=False)]
+				search_result = df[df["text"].str.contains(first_sentence, case=False)]
 				if not search_result.empty:
 					locations = search_result["location"].tolist()
 					locations_string += "\n".join(locations) + "\n"

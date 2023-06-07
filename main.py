@@ -1374,14 +1374,15 @@ def chat():
 		st.markdown("---")
 		st.write("Sources :")
 		source_documents = [doc.page_content for doc in result["source_documents"]]
-		unique_sources_list = []
+		my_array = []
 		for doc in source_documents:
 			first_sentence = max(doc.split("."), key=len).strip()
 			search_result = df[df["text"].str.contains(first_sentence, case=False)]
-			unique_sources_list.extend(search_result["location"].to_string(index=False, header=False))
-		pd.set_option("display.max_colwidth", None)
-		unique_sources_list = list(set(unique_sources_list))
-		st.write(unique_sources_list)
+			pd.set_option("display.max_colwidth", None)
+			sources = search_result["location"].to_string(index=False, header=False)
+			my_array.concat(sources)
+		unique_sources = np.unique(my_array)
+		st.write(unique_sources)
 
 					
 st.empty()		

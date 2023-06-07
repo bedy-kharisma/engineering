@@ -1416,7 +1416,7 @@ def req():
 			llm=OpenAI(openai_api_key=OPENAI_API_KEY),
 			chain_type="stuff",
 			retriever=docsearch.as_retriever(),
-			formatted_prompt = prompt_template.format_prompt(component=component_name)
+			chain_type_kwargs={"prompt": formatted_prompt},
 			)
 		st.write( chain.generate())
 		#result = chain({"query": prompt})

@@ -1453,7 +1453,7 @@ page_names_to_funcs = {
     "Possible Supplier":Supplier,
     "Component Clustering & MTBF Calculator":MTBF,
     "Talk To Your Standards":chat,
-    "Requirements for each component":req
+    #"Requirements for each component":req
     }
 
 selected_page = st.sidebar.radio("Select a page", page_names_to_funcs.keys())

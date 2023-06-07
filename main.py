@@ -1361,8 +1361,8 @@ def chat():
 		selected_df['link'] = selected_df['id'].apply(lambda x: f'<a target="_blank" href="https://drive.google.com/file/d/{x}/view">{x}</a>')
 		selected_df = selected_df.drop("id", axis=1)
 		selected_df = selected_df.to_html(escape=False)
-		st.write(len(selected_df))
-		if len(selected_df) > 0:
+		st.write(elected_df.shape[0])
+		if selected_df.shape[0] > 0:
 			st.write(selected_df, unsafe_allow_html=True)
 			joined = ",".join(filtered_std['text'].astype(str))
 			doc = Document(page_content=joined)
@@ -1412,8 +1412,8 @@ def req():
 		selected_df['link'] = selected_df['id'].apply(lambda x: f'<a target="_blank" href="https://drive.google.com/file/d/{x}/view">{x}</a>')
 		selected_df = selected_df.drop("id", axis=1)
 		selected_df = selected_df.to_html(escape=False)
-		st.write(len(selected_df))
-		if len(selected_df) > 0:
+		st.write(selected_df.shape[0])
+		if selected_df.shape[0]>0:
 			st.write(selected_df, unsafe_allow_html=True)
 			joined = ",".join(filtered_std['text'].astype(str))
 			doc = Document(page_content=joined)

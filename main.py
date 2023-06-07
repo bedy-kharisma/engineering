@@ -1390,7 +1390,7 @@ def req():
 	unique_values = set(df["location"].str.split("/").str[1])
 	std_type = st.multiselect('Select Standards',unique_values,unique_values)
 	component_name = st.text_input("insert component's name","Vehicle body")
-	prompt_template = """
+	prompt = """
 		You are a quality control engineer responsible for ensuring compliance with industry standards for a {component}. 
 		Your task is to develop a set of parameters that all instances of the {component} must meet in order to comply with the given standards.
 		Write a detailed description of {component} and the specific standards that apply to it. 

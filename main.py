@@ -1417,12 +1417,7 @@ def req():
 			    llm=OpenAI(openai_api_key=OPENAI_API_KEY),
 			    chain_type="stuff",
 			    retriever=docsearch.as_retriever(),
-			    chain_type_kwargs={
-				"prompt": PromptTemplate(
-				    template=prompt,
-				    input_variables=["component_name"],
-				),
-			    },
+			    chain_type_kwargs={"prompt": formatted_prompt},
 			)
 		st.write(chain)
 		#result = chain({"query": prompt})

@@ -1408,7 +1408,7 @@ def req():
 	prompt_template=prompt.format(component=component)
 	if st.button("Process"):
 		filtered_std  = df[df["location"].apply(lambda x: any(item in x for item in std_type))]
-		filtered_std = filtered_std[filtered_std['text'].str.contains(component_name, flags=re.IGNORECASE)]
+		filtered_std = filtered_std[filtered_std['text'].str.contains(component, flags=re.IGNORECASE)]
 		selected_df = filtered_std[["location", "name", "id"]]
 		selected_df['link'] = selected_df['id'].apply(lambda x: f'<a target="_blank" href="https://drive.google.com/file/d/{x}/view">{x}</a>')
 		selected_df = selected_df.drop("id", axis=1)

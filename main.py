@@ -1386,11 +1386,11 @@ def chat():
 				if not search_result.empty:
 					locations = search_result["location"].tolist()
 					locations_string += "\n".join(locations) + "\n"
-	
+					locations_string = locations_string.rstrip("\n")
+					st.write(locations_string)
 			except:
 				pass
-			locations_string = locations_string.rstrip("\n")
-			st.write(locations_string)
+
 					
 st.empty()		
 page_names_to_funcs = {

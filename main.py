@@ -1376,8 +1376,8 @@ def chat():
 		source_documents = [doc.page_content for doc in result["source_documents"]]
 		for doc in source_documents:
 			first_sentence = max(doc.split("."), key=len).strip()
-			st.write(first_sentence)
 			search_result = df[df["text"].str.contains(first_sentence, case=False)]
+			pd.set_option("display.max_colwidth", None)
 			st.write(search_result["location"].to_string(index=False, header=False))
 
 					

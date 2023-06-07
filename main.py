@@ -1396,7 +1396,7 @@ def req():
 		Write a detailed description of {component} and the specific standards that apply to it. 
 		Outline the key parameters that must be considered and provide a clear explanation of how each parameter contributes to compliance. 
 		"""
-	formatted_prompt = prompt_template.format_prompt(component=component_name)
+	formatted_prompt = prompt.format(component=component_name)
 
 	if st.button("Process"):
 		filtered_std  = df[df["location"].apply(lambda x: any(item in x for item in std_type))]

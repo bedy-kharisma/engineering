@@ -1377,11 +1377,8 @@ def chat():
 		for doc in source_documents:
 			first_sentence = max(doc.split("."), key=len).strip()
 			st.write(first_sentence)
-			try:
-				search_result = df[df["text"].str.contains(first_sentence, case=False)]
-				st.write(search_result["location"].tolist().rstrip("\n"))
-			except:
-				pass
+			st.write(search_result["location"].to_string(index=False, header=False))
+
 					
 st.empty()		
 page_names_to_funcs = {

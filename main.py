@@ -1373,6 +1373,7 @@ def chat():
 		st.write("Answer : "+str(result["result"]))
 		st.markdown("---")
 		st.write("Sources :")
+		source_documents = [doc.page_content for doc in result["source_documents"]]
 		for doc in source_documents:
 			first_sentence = max(doc.split("."), key=len).strip()
 			st.write(first_sentence)

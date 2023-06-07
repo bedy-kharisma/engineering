@@ -1390,13 +1390,13 @@ def req():
 	unique_values = set(df["location"].str.split("/").str[1])
 	std_type = st.multiselect('Select Standards',unique_values,unique_values)
 	component_name = st.text_input("insert component's name","Vehicle body")
-	prompt = """
+	prompt_template = """
 		You are a quality control engineer responsible for ensuring compliance with industry standards for a {component}. 
 		Your task is to develop a set of parameters that all instances of the {component} must meet in order to comply with the given standards.
 		Write a detailed description of {component} and the specific standards that apply to it. 
 		Outline the key parameters that must be considered and provide a clear explanation of how each parameter contributes to compliance. 
 		"""
-	formatted_prompt = prompt.format(component=component_name)
+	prompt = prompt_template.format(component=component_name)
 	if st.button("Process"):
 		filtered_std  = df[df["location"].apply(lambda x: any(item in x for item in std_type))]
 		filtered_std = filtered_std[filtered_std['text'].str.contains(component_name, flags=re.IGNORECASE)]
@@ -1415,7 +1415,7 @@ def req():
 			llm=OpenAI(openai_api_key=OPENAI_API_KEY),
 			chain_type="stuff",
 			retriever=docsearch.as_retriever(),
-			chain_type_kwargs={"prompt": formatted_prompt},
+			chain_type_kwargs={"prompt": {"text": prompt}},
 			)
 		st.write( chain.generate())
 		#result = chain({"query": prompt})

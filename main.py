@@ -1383,7 +1383,8 @@ def chat():
 			first_sentence = max(doc.split("."), key=len).strip()
 			st.write(first_sentence)
 			try:
-				search_result = df_standards[df_standards["text"].str.contains(first_sentence, case=False)]
+				escaped_sentence = re.escape(first_sentence)
+				search_result = df_standards[df_standards["text"].str.contains(escaped_sentence, case=False)]
 				if not search_result.empty:
 					locations = search_result["location"].tolist()
 					locations_string += "\n".join(locations) + "\n"

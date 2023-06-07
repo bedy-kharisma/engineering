@@ -1412,12 +1412,23 @@ def req():
 		texts = text_splitter.split_documents([doc])
 		embeddings = OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY)
 		docsearch = Chroma.from_documents(texts, embeddings)
-		from langchain.chains.question_answering import load_qa_chain
-		qa = RetrievalQA.from_chain_type(llm=OpenAI(openai_api_key=OPENAI_API_KEY), chain_type="map_rerank", retriever=docsearch.as_retriever(),return_source_documents=True)
-		result = qa({"query": query})
-		st.write("Answer :")
-		st.write(result["result"])
-		st.markdown("---")
+		from langchain.chains import RetrievalQAWithSourcesChain
+		chain = RetrievalQAWithSourcesChain.from_chain_type(
+			    llm=OpenAI(openai_api_key=OPENAI_API_KEY),
+			    chain_type="stuff",
+			    retriever=docsearch.as_retriever(),
+			    chain_type_kwargs={
+				"prompt": PromptTemplate(
+				    template=prompt,
+				    input_variables=["component_name"],
+				),
+			    },
+			)
+		st.write(chain)
+		#result = chain({"query": prompt})
+		#st.write("Answer :")
+		#st.write(result["result"])
+		#st.markdown("---")
 		st.write("Sources :")
 		source_documents = [doc.page_content for doc in result["source_documents"]]
 		unique_sources = pd.concat([df[df["text"].str.contains(max(doc.split("."), key=len).strip(), case=False)]["location"] for doc in source_documents]).unique()

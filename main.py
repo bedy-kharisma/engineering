@@ -1415,7 +1415,7 @@ def req():
 		docsearch = Chroma.from_documents(texts, embeddings)
 		
 		prompt_template = LLMChainTemplate()
-    		formatted_prompt = prompt_template.format_prompt(component=component_name)
+		formatted_prompt = prompt_template.format_prompt(component=component_name)
 
 		chain = RetrievalQAWithSourcesChain.from_chain_type(
 			llm=OpenAI(openai_api_key=OPENAI_API_KEY),

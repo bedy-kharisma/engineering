@@ -1380,7 +1380,7 @@ def chat():
 			search_result = df[df["text"].str.contains(first_sentence, case=False)]
 			pd.set_option("display.max_colwidth", None)
 			sources = search_result["location"].to_string(index=False, header=False)
-			my_array.concat(sources)
+			my_array.extend(sources)
 		unique_sources = np.unique(my_array)
 		st.write(unique_sources)
 

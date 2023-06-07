@@ -45,7 +45,7 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.chains import RetrievalQAWithSourcesChain
 from langchain.chains.question_answering import load_qa_chain
 from langchain.prompts import PromptTemplate
-from langchain.templates import LLMChainTemplate
+
 warnings.filterwarnings("ignore")
 
 # Create a connection object.

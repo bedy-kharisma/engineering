@@ -1343,7 +1343,7 @@ def chat():
 	st.write("""""This App uses AI, though sometimes it provides correct answer, sometimes it may not. 
 		Always use your own discretion.
 		This AI only fit for a short question answering 
-		Get your open ai api key [here](https://platform.openai.com/account/api-keys)""")
+		This AI uses paid API, get your openai api key [here](https://platform.openai.com/account/api-keys)""")
 	OPENAI_API_KEY=st.text_input("insert openai api",type="password")
 	unique_values = set(df["location"].str.split("/").str[1])
 	std_type = st.multiselect('Select Standards',unique_values,unique_values)
@@ -1390,7 +1390,7 @@ page_names_to_funcs = {
     "Possible Supplier":Supplier,
     "Component Clustering & MTBF Calculator":MTBF,
     "Talk To Your Standards":chat,
-    "Requirements for each component":req
+    #"Requirements for each component":req
     }
 
 selected_page = st.sidebar.radio("Select a page", page_names_to_funcs.keys())

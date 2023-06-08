@@ -25,4 +25,4 @@ langchain
 openai
 chromadb
 tiktoken
-PyPDF2
+PdfReader

@@ -25,5 +25,4 @@ langchain
 openai
 chromadb
 tiktoken
-farm-haystack 
-sentence_transformers
+

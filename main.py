@@ -41,7 +41,7 @@ from langchain.docstore.document import Document as LangchainDocument
 from langchain.llms import OpenAI
 from langchain.chains import RetrievalQA
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from PyPdf2 import PdfReader
+
 warnings.filterwarnings("ignore")
 
 # Create a connection object.
@@ -1343,54 +1343,24 @@ def chat():
 	st.write("""This App uses AI, though sometimes it provides correct answer, sometimes it may not. Always use your own discretion.
 		This AI only fit for a short question answering 
 		This AI uses paid API, get your openai api key [here](https://platform.openai.com/account/api-keys)""")
-	options=st.radio("are you going to use existing standards or standards pdf from a specific folder?", ("Existing standards","PDF files"))
 	OPENAI_API_KEY=st.text_input("insert openai api",type="password")
 	keyword = st.text_input("choose topic","running dynamic")
 	query = st.text_input("insert query","vehicle at what speed that must perform dynamic performance test?")
-	if options == "Existing standards":
-		df = pd.read_pickle('./standards.pkl')
-		df['num_chars'] = df['text'].apply(lambda x: len(x))
-		df = df[df['num_chars'] != 0]
-		unique_values = set(df["location"].str.split("/").str[1])
-		std_type = st.multiselect('Select Standards',unique_values,unique_values)
-		filtered_std  = df[df["location"].apply(lambda x: any(item in x for item in std_type))]
-		filtered_std = filtered_std[filtered_std['text'].str.contains(keyword, flags=re.IGNORECASE)]
-		selected_df = filtered_std[["location", "name", "id","text"]]
-		selected_df['link'] = selected_df['id'].apply(lambda x: f'<a target="_blank" href="https://drive.google.com/file/d/{x}/view">{x}</a>')
-		selected_df = selected_df.drop("id", axis=1)
-		if st.button("Process"):
-		# Filter by keyword
-			if selected_df.shape[0] > 0:
-				joined = ",".join(filtered_std['text'].astype(str))
-				doc = LangchainDocument(page_content=joined)
-				text_splitter = RecursiveCharacterTextSplitter(chunk_size = 1000,chunk_overlap  = 20,length_function = len)
-				texts = text_splitter.split_documents([doc])
-				embeddings = OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY)
-				docsearch = Chroma.from_documents(texts, embeddings)
-				qa = RetrievalQA.from_chain_type(llm=OpenAI(openai_api_key=OPENAI_API_KEY), chain_type="map_rerank", retriever=docsearch.as_retriever(),return_source_documents=True)
-				result = qa({"query": query})
-				st.write("Answer :")
-				st.write(result["result"])
-				st.markdown("---")
-				st.write("Sources :")
-				source_documents = [doc.page_content for doc in result["source_documents"]]
-				unique_sources = pd.concat([selected_df[selected_df["text"].str.contains(max(doc.split("."), key=len).strip(), case=False)][["location", "link"]] for doc in source_documents]).drop_duplicates(subset=["location", "link"])
-				view_df = unique_sources.to_html(index=False,escape=False)
-				st.write(view_df, unsafe_allow_html=True)
-			else:
-				st.write("No data contain specific keyword")
-	else:
-		uploaded_files = st.file_uploader("Upload PDF Files", type=["pdf"], accept_multiple_files=True)
-		if uploaded_files:
-			for file in uploaded_files:
-				reader = PdfReader(file)
-				num_pages = len(reader.pages)
-				text = ""
-				for page_num in range(num_pages):
-				    page = reader.pages(page_num)
-				    text += page.extract_text()
-		if st.button("Process") and uploaded_files:
-			doc = LangchainDocument(page_content=text)
+	df = pd.read_pickle('./standards.pkl')
+	df['num_chars'] = df['text'].apply(lambda x: len(x))
+	df = df[df['num_chars'] != 0]
+	unique_values = set(df["location"].str.split("/").str[1])
+	std_type = st.multiselect('Select Standards',unique_values,unique_values)
+	filtered_std  = df[df["location"].apply(lambda x: any(item in x for item in std_type))]
+	filtered_std = filtered_std[filtered_std['text'].str.contains(keyword, flags=re.IGNORECASE)]
+	selected_df = filtered_std[["location", "name", "id","text"]]
+	selected_df['link'] = selected_df['id'].apply(lambda x: f'<a target="_blank" href="https://drive.google.com/file/d/{x}/view">{x}</a>')
+	selected_df = selected_df.drop("id", axis=1)
+	if st.button("Process"):
+	# Filter by keyword
+		if selected_df.shape[0] > 0:
+			joined = ",".join(filtered_std['text'].astype(str))
+			doc = LangchainDocument(page_content=joined)
 			text_splitter = RecursiveCharacterTextSplitter(chunk_size = 1000,chunk_overlap  = 20,length_function = len)
 			texts = text_splitter.split_documents([doc])
 			embeddings = OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY)
@@ -1400,11 +1370,14 @@ def chat():
 			st.write("Answer :")
 			st.write(result["result"])
 			st.markdown("---")
-			#st.write("Sources :")
-			#source_documents = [doc.page_content for doc in result["source_documents"]]
-			
+			st.write("Sources :")
+			source_documents = [doc.page_content for doc in result["source_documents"]]
+			unique_sources = pd.concat([selected_df[selected_df["text"].str.contains(max(doc.split("."), key=len).strip(), case=False)][["location", "link"]] for doc in source_documents]).drop_duplicates(subset=["location", "link"])
+			view_df = unique_sources.to_html(index=False,escape=False)
+			st.write(view_df, unsafe_allow_html=True)
 		else:
 			st.write("No data contain specific keyword")
+
 
 st.empty()		
 page_names_to_funcs = {

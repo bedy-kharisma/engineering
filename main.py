@@ -1396,28 +1396,28 @@ def chat():
 	else:
 		folder_path = st.text_input("Enter Folder Path")
 		if folder_path:
-		# Call the function to read PDF files and create a DataFrame
-		df = read_pdf_files(folder_path)
-		if st.button("Process"):
-			if df.shape[0] > 0:
-				joined = ",".join(df['text'].astype(str))
-				doc = LangchainDocument(page_content=joined)
-				text_splitter = RecursiveCharacterTextSplitter(chunk_size = 1000,chunk_overlap  = 20,length_function = len)
-				texts = text_splitter.split_documents([doc])
-				embeddings = OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY)
-				docsearch = Chroma.from_documents(texts, embeddings)
-				qa = RetrievalQA.from_chain_type(llm=OpenAI(openai_api_key=OPENAI_API_KEY), chain_type="map_rerank", retriever=docsearch.as_retriever(),return_source_documents=True)
-				result = qa({"query": query})
-				st.write("Answer :")
-				st.write(result["result"])
-				st.markdown("---")
-				st.write("Sources :")
-				source_documents = [doc.page_content for doc in result["source_documents"]]
-				unique_sources = pd.concat([df[df["text"].str.contains(max(doc.split("."), key=len).strip(), case=False)]["location"] for doc in source_documents]).drop_duplicates(subset=["location"])
-				view_df = unique_sources.to_html(index=False,escape=False)
-				st.write(view_df, unsafe_allow_html=True)
-			else:
-				st.write("No data contain specific keyword")
+			# Call the function to read PDF files and create a DataFrame
+			df = read_pdf_files(folder_path)
+			if st.button("Process"):
+				if df.shape[0] > 0:
+					joined = ",".join(df['text'].astype(str))
+					doc = LangchainDocument(page_content=joined)
+					text_splitter = RecursiveCharacterTextSplitter(chunk_size = 1000,chunk_overlap  = 20,length_function = len)
+					texts = text_splitter.split_documents([doc])
+					embeddings = OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY)
+					docsearch = Chroma.from_documents(texts, embeddings)
+					qa = RetrievalQA.from_chain_type(llm=OpenAI(openai_api_key=OPENAI_API_KEY), chain_type="map_rerank", retriever=docsearch.as_retriever(),return_source_documents=True)
+					result = qa({"query": query})
+					st.write("Answer :")
+					st.write(result["result"])
+					st.markdown("---")
+					st.write("Sources :")
+					source_documents = [doc.page_content for doc in result["source_documents"]]
+					unique_sources = pd.concat([df[df["text"].str.contains(max(doc.split("."), key=len).strip(), case=False)]["location"] for doc in source_documents]).drop_duplicates(subset=["location"])
+					view_df = unique_sources.to_html(index=False,escape=False)
+					st.write(view_df, unsafe_allow_html=True)
+				else:
+					st.write("No data contain specific keyword")
 
 st.empty()		
 page_names_to_funcs = {

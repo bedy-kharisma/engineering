@@ -1385,8 +1385,8 @@ def chat():
 			from pathlib import Path
 			import PyPDF2
 			files_data = []
-			for file_path in Path(folder_path).glob("*.pdf"):
-				st.write("Found files:", file_paths)			
+			file_paths = list(Path(folder_path).glob("*.pdf"))
+			st.write("Number of PDF files found:", len(file_paths))			
                   #file_path = str(file_path)
                   #st.write("Processing file:", file_path)
                   #file_data = {"filename": file_path, "location": folder_path, "text": ""}

@@ -41,7 +41,7 @@ from langchain.docstore.document import Document as LangchainDocument
 from langchain.llms import OpenAI
 from langchain.chains import RetrievalQA
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-
+import PyPDF2
 warnings.filterwarnings("ignore")
 
 # Create a connection object.

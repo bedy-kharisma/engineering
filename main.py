@@ -1357,8 +1357,6 @@ def chat():
 		selected_df['link'] = selected_df['id'].apply(lambda x: f'<a target="_blank" href="https://drive.google.com/file/d/{x}/view">{x}</a>')
 		selected_df = selected_df.drop("id", axis=1)
 		if selected_df.shape[0] > 0:
-			#selected_df = selected_df.to_html(escape=False)
-			#st.write(selected_df, unsafe_allow_html=True)
 			joined = ",".join(filtered_std['text'].astype(str))
 			doc = LangchainDocument(page_content=joined)
 			text_splitter = RecursiveCharacterTextSplitter(chunk_size = 1000,chunk_overlap  = 20,length_function = len)
@@ -1373,11 +1371,8 @@ def chat():
 			st.write("Sources :")
 			source_documents = [doc.page_content for doc in result["source_documents"]]
 			unique_sources = pd.concat([selected_df[selected_df["text"].str.contains(max(doc.split("."), key=len).strip(), case=False)][["location", "link"]] for doc in source_documents]).drop_duplicates(subset=["location", "link"])
-			st.write(unique_sources)
-			view_df = unique_sources.to_html(escape=False)
+			view_df = unique_sources.to_html(index=False,escape=False)
 			st.write(view_df, unsafe_allow_html=True)
-			locations_string = "\n".join(unique_sources)
-			st.write(locations_string)
 		else:
 			st.write("No data contain specific keyword")
 

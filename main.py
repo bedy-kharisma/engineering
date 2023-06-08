@@ -1380,45 +1380,47 @@ def chat():
 			else:
 				st.write("No data contain specific keyword")
 	else:
-		folder_path = st.text_input("Enter Folder Path")
-		if st.button("Ingest PDF") and folder_path:
-			# Call the function to read PDF files and create a DataFrame
-			from pathlib import Path
-			import PyPDF2
-			files_data = []
-			for file_path in Path(folder_path).glob("*.pdf"):
-				file_path = str(file_path)
-				st.write(file_path)
-				file_data = {"filename": file_path, "location": folder_path, "text": ""}
-				with open(file_path, "rb") as file:
-					reader = PyPDF2.PdfReader(file)
-					num_pages = len(reader.pages)
-					for page_num in range(num_pages):
-						page = reader.pages[page_num]
-						file_data["text"] += page.extract_text()
-				files_data.append(file_data)
-			df_folder = pd.DataFrame(files_data)
-			st.write(df_folder)
-			if st.button("Process"):
-				if df.shape[0] > 0:
-					joined = ",".join(df['text'].astype(str))
-					doc = LangchainDocument(page_content=joined)
-					text_splitter = RecursiveCharacterTextSplitter(chunk_size = 1000,chunk_overlap  = 20,length_function = len)
-					texts = text_splitter.split_documents([doc])
-					embeddings = OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY)
-					docsearch = Chroma.from_documents(texts, embeddings)
-					qa = RetrievalQA.from_chain_type(llm=OpenAI(openai_api_key=OPENAI_API_KEY), chain_type="map_rerank", retriever=docsearch.as_retriever(),return_source_documents=True)
-					result = qa({"query": query})
-					st.write("Answer :")
-					st.write(result["result"])
-					st.markdown("---")
-					st.write("Sources :")
-					source_documents = [doc.page_content for doc in result["source_documents"]]
-					unique_sources = pd.concat([df[df["text"].str.contains(max(doc.split("."), key=len).strip(), case=False)]["location"] for doc in source_documents]).drop_duplicates(subset=["location"])
-					view_df = unique_sources.to_html(index=False,escape=False)
-					st.write(view_df, unsafe_allow_html=True)
-				else:
-					st.write("No data contain specific keyword")
+            folder_path = st.text_input("Enter Folder Path")
+            if st.button("Ingest PDF") and folder_path:
+	        # Call the function to read PDF files and create a DataFrame
+	        from pathlib import Path
+	        import PyPDF2
+	        files_data = []
+	        for file_path in Path(folder_path).glob("*.pdf"):
+                  file_path = str(file_path)
+                  st.write("Processing file:", file_path)
+                  file_data = {"filename": file_path, "location": folder_path, "text": ""}
+                  with open(file_path, "rb") as file:
+                    reader = PyPDF2.PdfReader(file)
+                    num_pages = len(reader.pages)
+                    st.write("Number of pages in file:", num_pages)
+                    for page_num in range(num_pages):
+                         page = reader.pages[page_num]
+		         file_data["text"] += page.extract_text()
+		   files_data.append(file_data)
+	     df_folder = pd.DataFrame(files_data)
+	     st.write("DataFrame shape:", df_folder.shape)
+	     st.write(df_folder)
+		#if st.button("Process"):
+		#	if df.shape[0] > 0:
+		#		joined = ",".join(df['text'].astype(str))
+		#		doc = LangchainDocument(page_content=joined)
+		#		text_splitter = RecursiveCharacterTextSplitter(chunk_size = 1000,chunk_overlap  = 20,length_function = len)
+		#		texts = text_splitter.split_documents([doc])
+		#		embeddings = OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY)
+		#		docsearch = Chroma.from_documents(texts, embeddings)
+		#		qa = RetrievalQA.from_chain_type(llm=OpenAI(openai_api_key=OPENAI_API_KEY), chain_type="map_rerank", retriever=docsearch.as_retriever(),return_source_documents=True)
+		#		result = qa({"query": query})
+		#		st.write("Answer :")
+		#		st.write(result["result"])
+		#		st.markdown("---")
+		#		st.write("Sources :")
+		#		source_documents = [doc.page_content for doc in result["source_documents"]]
+		#		unique_sources = pd.concat([df[df["text"].str.contains(max(doc.split("."), key=len).strip(), case=False)]["location"] for doc in source_documents]).drop_duplicates(subset=["location"])
+		#		view_df = unique_sources.to_html(index=False,escape=False)
+		#		st.write(view_df, unsafe_allow_html=True)
+		#	else:
+		#		st.write("No data contain specific keyword")
 
 st.empty()		
 page_names_to_funcs = {

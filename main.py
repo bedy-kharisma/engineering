@@ -1334,24 +1334,7 @@ def MTBF():
         st.subheader("Or if you already have filled delivery data and cluster data, upload to the following")
         mtbf_clc(doc)
 	
-from pathlib import Path
-import PyPDF2
-def read_pdf_files(folder_path):
-    files_data = []
-    for file_path in Path(folder_path).glob("*.pdf"):
-        
-        file_path = str(file_path)
-        st.write(file_path)
-        file_data = {"filename": file_path, "location": file_path, "text": ""}
-        with open(file_path, "rb") as file:
-            reader = PyPDF2.PdfReader(file)
-            num_pages = len(reader.pages)
-            for page_num in range(num_pages):
-                page = reader.pages[page_num]
-                file_data["text"] += page.extract_text()
-        files_data.append(file_data)
-    df = pd.DataFrame(files_data)
-    return df
+
 
 ##-- CHAT	
 def chat():
@@ -1400,7 +1383,22 @@ def chat():
 		folder_path = st.text_input("Enter Folder Path")
 		if st.button("ingest pdf") and folder_path !="" :
 			# Call the function to read PDF files and create a DataFrame
-			df = read_pdf_files(folder_path)
+			from pathlib import Path
+			import PyPDF2
+			files_data = []
+			for file_path in Path(folder_path).glob("*.pdf"):
+				file_path = str(file_path)
+				file_data = {"filename": file_path, "location": folder_path, "text": ""}
+				with open(file_path, "rb") as file:
+				    reader = PyPDF2.PdfReader(file)
+				    num_pages = len(reader.pages)
+				    for page_num in range(num_pages):
+					page = reader.pages[page_num]
+					file_data["text"] += page.extract_text()
+				files_data.append(file_data)
+			df = pd.DataFrame(files_data)
+
+		
 			st.write(df)
 			if st.button("Process"):
 				if df.shape[0] > 0:

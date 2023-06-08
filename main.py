@@ -1390,15 +1390,13 @@ def chat():
 				file_path = str(file_path)
 				file_data = {"filename": file_path, "location": folder_path, "text": ""}
 				with open(file_path, "rb") as file:
-				    reader = PyPDF2.PdfReader(file)
-				    num_pages = len(reader.pages)
-				    for page_num in range(num_pages):
-					page = reader.pages[page_num]
-					file_data["text"] += page.extract_text()
+					reader = PyPDF2.PdfReader(file)
+					num_pages = len(reader.pages)
+					for page_num in range(num_pages):
+						page = reader.pages[page_num]
+						file_data["text"] += page.extract_text()
 				files_data.append(file_data)
 			df = pd.DataFrame(files_data)
-
-		
 			st.write(df)
 			if st.button("Process"):
 				if df.shape[0] > 0:

@@ -1388,6 +1388,7 @@ def chat():
 			files_data = []
 			for file_path in Path(folder_path).glob("*.pdf"):
 				file_path = str(file_path)
+				st.write(file_path)
 				file_data = {"filename": file_path, "location": folder_path, "text": ""}
 				with open(file_path, "rb") as file:
 					reader = PyPDF2.PdfReader(file)

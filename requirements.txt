@@ -25,4 +25,4 @@ langchain
 openai
 chromadb
 tiktoken
-PyPdf2
+PyPdf2==3.0.1

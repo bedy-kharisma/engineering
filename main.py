@@ -1385,7 +1385,7 @@ def chat():
 	        # Call the function to read PDF files and create a DataFram
                 from pathlib import PatH
                 import PyPDF2
-	        files_data = []
+                files_data = []
 	        for file_path in Path(folder_path).glob("*.pdf"):
                   file_path = str(file_path)
                   st.write("Processing file:", file_path)

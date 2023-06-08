@@ -1382,9 +1382,9 @@ def chat():
 	else:
             folder_path = st.text_input("Enter Folder Path")
             if st.button("Ingest PDF") and folder_path:
-	        # Call the function to read PDF files and create a DataFrame
-                from pathlib import Path
-	        import PyPDF2
+	        # Call the function to read PDF files and create a DataFram
+                from pathlib import PatH
+                import PyPDF2
 	        files_data = []
 	        for file_path in Path(folder_path).glob("*.pdf"):
                   file_path = str(file_path)

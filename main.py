@@ -1398,9 +1398,9 @@ def chat():
                          page = reader.pages[page_num]
                          file_data["text"] += page.extract_text()
                   files_data.append(file_data)
-	     df_folder = pd.DataFrame(files_data)
-	     st.write("DataFrame shape:", df_folder.shape)
-	     st.write(df_folder)
+	    df_folder = pd.DataFrame(files_data)
+	    st.write("DataFrame shape:", df_folder.shape)
+	    st.write(df_folder)
 		#if st.button("Process"):
 		#	if df.shape[0] > 0:
 		#		joined = ",".join(df['text'].astype(str))

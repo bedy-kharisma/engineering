@@ -1383,12 +1383,12 @@ def chat():
 		uploaded_files = st.file_uploader("Upload PDF Files", type=["pdf"], accept_multiple_files=True)
 		if uploaded_files:
 			for file in uploaded_files:
-			reader = PyPDF2.PdfFileReader(file)
-			num_pages = reader.numPages
-			text = ""
-			for page_num in range(num_pages):
-			    page = reader.getPage(page_num)
-			    text += page.extractText()
+				reader = PyPDF2.PdfFileReader(file)
+				num_pages = reader.numPages
+				text = ""
+				for page_num in range(num_pages):
+				    page = reader.getPage(page_num)
+				    text += page.extractText()
 		if st.button("Process") and uploaded_files:
 			doc = LangchainDocument(page_content=text)
 			text_splitter = RecursiveCharacterTextSplitter(chunk_size = 1000,chunk_overlap  = 20,length_function = len)

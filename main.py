@@ -1339,8 +1339,9 @@ import PyPDF2
 def read_pdf_files(folder_path):
     files_data = []
     for file_path in Path(folder_path).glob("*.pdf"):
-        st.write(file_path)
+        
         file_path = str(file_path)
+        st.write(file_path)
         file_data = {"filename": file_path, "location": file_path, "text": ""}
         with open(file_path, "rb") as file:
             reader = PyPDF2.PdfReader(file)

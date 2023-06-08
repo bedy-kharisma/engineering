@@ -1395,7 +1395,9 @@ def chat():
 				st.write("No data contain specific keyword")
 	else:
 		folder_path = st.text_input("Enter Folder Path")
-		folder_path = os.path.abspath(folder_path)
+		folder_path = folder_path.replace("\\", "/")
+		if not folder_path.endswith("/"):
+            		folder_path += "/"
 		if st.button("ingest pdf") and folder_path !="" :
 			# Call the function to read PDF files and create a DataFrame
 			df = read_pdf_files(folder_path)

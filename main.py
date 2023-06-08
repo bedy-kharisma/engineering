@@ -1396,7 +1396,7 @@ def chat():
                     st.write("Number of pages in file:", num_pages)
                     for page_num in range(num_pages):
                          page = reader.pages[page_num]
-		         file_data["text"] += page.extract_text()
+                         file_data["text"] += page.extract_text()
 		   files_data.append(file_data)
 	     df_folder = pd.DataFrame(files_data)
 	     st.write("DataFrame shape:", df_folder.shape)

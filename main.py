@@ -1381,7 +1381,7 @@ def chat():
 				st.write("No data contain specific keyword")
 	else:
 		folder_path = st.text_input("Enter Folder Path")
-		if st.button("ingest pdf") and folder_path !="" :
+		if st.button("ingest pdf") and folder_path:
 			# Call the function to read PDF files and create a DataFrame
 			from pathlib import Path
 			import PyPDF2

@@ -41,7 +41,7 @@ from langchain.docstore.document import Document as LangchainDocument
 from langchain.llms import OpenAI
 from langchain.chains import RetrievalQA
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-import PdfReader
+import PyPDF2
 warnings.filterwarnings("ignore")
 
 # Create a connection object.
@@ -1383,12 +1383,12 @@ def chat():
 		uploaded_files = st.file_uploader("Upload PDF Files", type=["pdf"], accept_multiple_files=True)
 		if uploaded_files:
 			for file in uploaded_files:
-				reader = PdfReader.PdfFileReader(file)
-				num_pages = reader.numPages
+				reader = PdfReader(file)
+				num_pages = len(reader.pages)
 				text = ""
 				for page_num in range(num_pages):
-				    page = reader.getPage(page_num)
-				    text += page.extractText()
+				    page = reader.pages(page_num)
+				    text += page.extract_text()
 		if st.button("Process") and uploaded_files:
 			doc = LangchainDocument(page_content=text)
 			text_splitter = RecursiveCharacterTextSplitter(chunk_size = 1000,chunk_overlap  = 20,length_function = len)

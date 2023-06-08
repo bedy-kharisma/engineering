@@ -37,6 +37,7 @@ import warnings
 #for chat
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.vectorstores import Chroma
+from langchain.docstore.document import Document as LangchainDocument
 from langchain.llms import OpenAI
 from langchain.chains import RetrievalQA
 from langchain.text_splitter import RecursiveCharacterTextSplitter
@@ -1355,12 +1356,11 @@ def chat():
 		selected_df = filtered_std[["location", "name", "id","text"]]
 		selected_df['link'] = selected_df['id'].apply(lambda x: f'<a target="_blank" href="https://drive.google.com/file/d/{x}/view">{x}</a>')
 		selected_df = selected_df.drop("id", axis=1)
-		st.write(selected_df.shape[0])
 		if selected_df.shape[0] > 0:
 			#selected_df = selected_df.to_html(escape=False)
 			#st.write(selected_df, unsafe_allow_html=True)
 			joined = ",".join(filtered_std['text'].astype(str))
-			doc = Document(page_content=joined)
+			doc = LangchainDocument(page_content=joined)
 			text_splitter = RecursiveCharacterTextSplitter(chunk_size = 1000,chunk_overlap  = 20,length_function = len)
 			texts = text_splitter.split_documents([doc])
 			embeddings = OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY)
@@ -1373,6 +1373,9 @@ def chat():
 			st.write("Sources :")
 			source_documents = [doc.page_content for doc in result["source_documents"]]
 			unique_sources = pd.concat([selected_df[selected_df["text"].str.contains(max(doc.split("."), key=len).strip(), case=False)][["location", "link"]] for doc in source_documents]).drop_duplicates(subset=["location", "link"])
+			st.write(unique_sources)
+			view_df = unique_sources.to_html(escape=False)
+			st.write(view_df, unsafe_allow_html=True)
 			locations_string = "\n".join(unique_sources)
 			st.write(locations_string)
 		else:

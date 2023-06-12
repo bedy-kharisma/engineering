@@ -1396,9 +1396,7 @@ page_names_to_funcs = {
 #page_names_to_funcs[selected_page]()
 selected_page = None
 for page_name in page_names_to_funcs:
-    if st.sidebar.markdown(f"[{page_name}](#{page_name.replace(' ', '-')})"):
-        selected_page = page_name
-        break
+    st.sidebar.write(page_name)
 
 if selected_page:
     page_names_to_funcs[selected_page]()

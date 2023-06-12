@@ -1399,4 +1399,4 @@ from streamlit_option_menu import option_menu
 with st.sidebar:
     selected_page = option_menu("Main Menu", page_names_to_funcs.keys(), 
         #icons=['house', 'gear'], menu_icon="cast", default_index=1)
-    page_names_to_funcs[selected_page]()
+page_names_to_funcs[selected_page]()

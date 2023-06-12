@@ -1394,12 +1394,15 @@ page_names_to_funcs = {
 
 #selected_page = st.sidebar.radio("Select a page", page_names_to_funcs.keys())
 #page_names_to_funcs[selected_page]()
-for page_name in page_names_to_funcs.keys():
-    if st.sidebar.markdown(f"<a href='#{page_name}'>{page_name}</a>", unsafe_allow_html=True):
-        selected_page = page_name
-        break
-
+selected_page = st.sidebar.button("Product Breakdown Structure")
 if selected_page:
-    page_names_to_funcs[selected_page]()
+    page_names_to_funcs["Product Breakdown Structure"]()
 
+selected_page = st.sidebar.button("Material Code")
+if selected_page:
+    page_names_to_funcs["Material Code"]()
+
+selected_page = st.sidebar.button("Initial FMECA")
+if selected_page:
+    page_names_to_funcs["Initial FMECA"]()
 

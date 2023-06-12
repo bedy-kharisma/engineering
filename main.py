@@ -1394,7 +1394,9 @@ page_names_to_funcs = {
 
 #selected_page = st.sidebar.selectbox("Select a page", page_names_to_funcs.keys())
 #page_names_to_funcs[selected_page]()
-selected_page = st.sidebar.selectbox("Main Menu", list(page_names_to_funcs.keys()))
+from streamlit_option_menu import option_menu
 
-if selected_page:
-    page_names_to_funcs[selected_page]()
+with st.sidebar:
+    selected = option_menu("Main Menu", list(page_names_to_funcs.keys()) ) 
+        #icons=['house', 'gear'], menu_icon="cast", default_index=1)
+page_names_to_funcs[selected_page]()

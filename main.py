@@ -1381,7 +1381,7 @@ def chat():
 
 st.empty()		
 page_names_to_funcs = {
-    "Product Breakdown Structure": system_requirement,
+    "- Product Breakdown Structure": system_requirement,
     "Material Code":Matcod,
     "Initial FMECA":FMECA,
     "Failure Rate Calculator":failure,

@@ -1394,9 +1394,11 @@ page_names_to_funcs = {
 
 #selected_page = st.sidebar.selectbox("Select a page", page_names_to_funcs.keys())
 #page_names_to_funcs[selected_page]()
-from streamlit_option_menu import option_menu
+selected_page_1 = st.sidebar.selectbox("Select Page 1", list(page_names_to_funcs.keys()))
+selected_page_2 = st.sidebar.selectbox("Select Page 2", list(page_names_to_funcs.keys()))
 
-with st.sidebar:
-    selected_page = option_menu("Main Menu", list(page_names_to_funcs.keys()), "other Menu", list(page_names_to_funcs.keys()) ) 
-        #icons=['house', 'gear'], menu_icon="cast", default_index=1)
-page_names_to_funcs[selected_page]()
+if selected_page_1:
+    page_names_to_funcs[selected_page_1]()
+
+if selected_page_2:
+    page_names_to_funcs[selected_page_2]()

@@ -1399,5 +1399,5 @@ page_names_to_funcs = {
 #    if st.sidebar.button(page_name):
 #        page_names_to_funcs[page_name]()
 for page_name in page_names_to_funcs.keys():
-    if st.sidebar.markdown(f"<a href='#{page_name}'>{page_name}</a>", unsafe_allow_html=True):
+    if st.sidebar.button(page_name):
         page_names_to_funcs[page_name]()

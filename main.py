@@ -1394,8 +1394,8 @@ page_names_to_funcs = {
 
 #selected_page = st.sidebar.selectbox("Select a page", page_names_to_funcs.keys())
 #page_names_to_funcs[selected_page]()
-selected_page_1 = st.sidebar.selectbox("Select Page 1", list(page_names_to_funcs.keys()))
-selected_page_2 = st.sidebar.selectbox("Select Page 2", list(page_names_to_funcs.keys()))
+selected_page_1 = st.sidebar.selectbox("Select Page 1", list(page_names_to_funcs.keys()), index=0, key="page_1")
+selected_page_2 = st.sidebar.selectbox("Select Page 2", list(page_names_to_funcs.keys()), index=0, key="page_2")
 
 if selected_page_1:
     page_names_to_funcs[selected_page_1]()

@@ -1381,7 +1381,7 @@ def chat():
 
 st.empty()		
 page_names_to_funcs = {
-    "- Product Breakdown Structure": system_requirement,
+    "Product Breakdown Structure": system_requirement,
     "Material Code":Matcod,
     "Initial FMECA":FMECA,
     "Failure Rate Calculator":failure,
@@ -1392,5 +1392,5 @@ page_names_to_funcs = {
     "Talk To Your Standards":chat,
     }
 
-selected_page = st.sidebar.radio("Select a page", page_names_to_funcs.keys())
+selected_page = st.sidebar.selectbox("Select a page", page_names_to_funcs.keys())
 page_names_to_funcs[selected_page]()

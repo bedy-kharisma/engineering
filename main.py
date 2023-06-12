@@ -1382,22 +1382,15 @@ def chat():
 st.empty()		
 page_names_to_funcs = {
     "Product Breakdown Structure": system_requirement,
-    "Material Code":Matcod,
-    "Initial FMECA":FMECA,
-    "Failure Rate Calculator":failure,
     "Function Breakdown Structure":FBS,
-    "Standards finder":Standards,
-    "Possible Supplier":Supplier,
     "Component Clustering & MTBF Calculator":MTBF,
+    "Initial FMECA":FMECA,  
+    "Failure Rate Calculator":failure,	
+    "Material Code":Matcod,
+    "Possible Supplier":Supplier,
+    "Standards finder":Standards,
     "Talk To Your Standards":chat,
     }
 
-#selected_page = st.sidebar.radio("Select a page", page_names_to_funcs.keys())
-#page_names_to_funcs[selected_page]()
-#-- BUTTON
-#for page_name in page_names_to_funcs.keys():
-#    if st.sidebar.button(page_name):
-#        page_names_to_funcs[page_name]()
-for page_name in page_names_to_funcs.keys():
-    if st.sidebar.markdown(f"<a href='#{page_name}'>{page_name}</a>", unsafe_allow_html=True):
-        page_names_to_funcs[page_name]()
+selected_page = st.sidebar.radio("Select a page", page_names_to_funcs.keys())
+page_names_to_funcs[selected_page]()

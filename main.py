@@ -1392,7 +1392,14 @@ page_names_to_funcs = {
     "Talk To Your Standards":chat,
     }
 
-selected_page = st.sidebar.radio("Select a page", page_names_to_funcs.keys())
-page_names_to_funcs[selected_page]()
+#selected_page = st.sidebar.radio("Select a page", page_names_to_funcs.keys())
+#page_names_to_funcs[selected_page]()
+for page_name in page_names_to_funcs.keys():
+    if st.sidebar.markdown(f"<a href='#{page_name}'>{page_name}</a>", unsafe_allow_html=True):
+        selected_page = page_name
+        break
+
+if selected_page:
+    page_names_to_funcs[selected_page]()
 
 

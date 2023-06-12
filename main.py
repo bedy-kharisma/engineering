@@ -1392,5 +1392,13 @@ page_names_to_funcs = {
     "Talk To Your Standards":chat,
     }
 
-selected_page = st.sidebar.selectbox("Select a page", page_names_to_funcs.keys())
-page_names_to_funcs[selected_page]()
+#selected_page = st.sidebar.selectbox("Select a page", page_names_to_funcs.keys())
+#page_names_to_funcs[selected_page]()
+selected_page = None
+for page_name in page_names_to_funcs:
+    if st.sidebar.markdown(f"[{page_name}](#{page_name.replace(' ', '-')})"):
+        selected_page = page_name
+        break
+
+if selected_page:
+    page_names_to_funcs[selected_page]()

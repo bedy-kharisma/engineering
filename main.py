@@ -1396,7 +1396,9 @@ page_names_to_funcs = {
 #page_names_to_funcs[selected_page]()
 selected_page = None
 for page_name in page_names_to_funcs:
-    st.sidebar.write(page_name)
+    if st.sidebar.markdown(f"<a href='#{page_name}'>{page_name}</a>", unsafe_allow_html=True):
+        selected_page = page_name
+        break
 
 if selected_page:
     page_names_to_funcs[selected_page]()

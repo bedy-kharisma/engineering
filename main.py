@@ -89,6 +89,7 @@ def filter_dataframe(df: pd.DataFrame) -> pd.DataFrame:
     unq_filtered_tot=filtered_tot['MPG name'].unique()
     df = df.copy()
     to_filter_columns = st.multiselect("Main Product group apa sajakah yang akan Anda gunakan", unq_filtered_tot,unq_filtered_tot,key=1)
+    st.markdown("---")
     modification_container = st.container()
     with modification_container:
         level2 = []

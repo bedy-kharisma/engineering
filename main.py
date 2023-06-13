@@ -345,7 +345,8 @@ def FBS():
         fbs_df=pd.read_csv(csv_url,on_bad_lines='skip')
         ##################
         to_filter_columns = st.multiselect("Function Level 1 apa sajakah yang akan Anda gunakan", fbs_df['level 1 Function'].unique(),fbs_df['level 1 Function'].unique(),key=1)
-        modification_container = st.container()
+        st.markdown("---")
+	modification_container = st.container()
         with modification_container:
             level2 = []
             level3 = []

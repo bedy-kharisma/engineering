@@ -1226,8 +1226,13 @@ def MTBF():
     st.subheader("Upload your Gangguan XLSX file")
     file = st.file_uploader("Upload XLSX file", type=["xlsx"])
     if file is not None:
-        # Read the Excel file
-        df = pd.read_excel(file)
+        file_extension = file.name.split('.')[-1]
+        if file_extension.lower() == "xlsx":
+            df = pd.read_excel(file)
+        elif file_extension.lower() == "csv":
+            df = pd.read_csv(file)
+        else:
+            st.error("Unsupported file format. Please upload either a CSV or XLSX file.")
         #get the table
         if df.columns[0][:5]=="Unnam":
             first_nonempty_row = df.index[df.notnull().any(axis=1)][0]

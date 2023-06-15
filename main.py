@@ -1247,9 +1247,9 @@ def MTBF():
         num_data = st.slider('How many of the data you are going to be used in clustering?', 0, len(df), 50)
         df=df.head(num_data)
         st.write(df)
-        choose=st.radio("How are you going to define unique componeny id?",('MPG SPG SSPG (BS EN 15380-2) + Train NUmber + Cluster','Train Number + Cluster','Cluster'),key=1)
+        choose=st.radio("How are you going to define unique componeny id?",('MPG SPG SSPG (BS EN 15380-2) + Train Number + Cluster','Train Number + Cluster','Cluster'),key=1)
         # Create a new DataFrame with unique values in 'Nama Komponen'
-        if choose == "MPG SPG SSPG (BS EN 15380-2) + Train NUmber + Cluster" and all(col in merged_df.columns for col in ['MPG', 'SPG', 'SSPG']):
+        if choose == "MPG SPG SSPG (BS EN 15380-2) + Train Number + Cluster" and all(col in merged_df.columns for col in ['MPG', 'SPG', 'SSPG']):
             default=["TS", "Tanggal", "Kereta", "Klasifikasi Gangguan", "Nama Komponen", "Jumlah","MPG","SPG", "SSPG"]
             PG=["MPG","SPG", "SSPG"]
         else:
@@ -1261,10 +1261,10 @@ def MTBF():
         df=df.drop_duplicates(subset=['Tanggal','TS','Kereta','Nama Komponen','Jumlah']+PG)
         unique_count = df['Nama Komponen'].nunique()  # Get the number of unique values
         st.write("Number of unique values in 'Nama Komponen':", unique_count)
-        #create df of combinations Kereta and TS
+        #create df of combinations Kereta 
         df_delivery = process_all_values(df, "Kereta")
         df_delivery = pd.DataFrame({
-            'Trainset': df_delivery.apply(lambda row: f"{row['Kereta']} - {row['TS']}", axis=1),
+            'Trainset': df_delivery.apply(lambda row: f"{row['Kereta']}", axis=1),
             'Delivery Date': [''] * len(df_delivery)
         })
         df_delivery = df_delivery.drop_duplicates(subset=['Trainset'])

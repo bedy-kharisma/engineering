@@ -1254,7 +1254,7 @@ def MTBF():
         st.write(df)
         choose=st.radio("How are you going to define unique componeny id?",('MPG SPG SSPG (BS EN 15380-2) + Train Number + Cluster','Train Number + Cluster','Cluster'),key=1)
         # Create a new DataFrame with unique values in 'Nama Komponen'
-        if choose == "MPG SPG SSPG (BS EN 15380-2) + Train Number + Cluster" and all(col in merged_df.columns for col in ['MPG', 'SPG', 'SSPG']):
+        if choose == "MPG SPG SSPG (BS EN 15380-2) + Train Number + Cluster" and all(col in df.columns for col in ['MPG', 'SPG', 'SSPG']):
             default=["TS", "Tanggal", "Kereta", "Klasifikasi Gangguan", "Nama Komponen", "Jumlah","MPG","SPG", "SSPG"]
             PG=["MPG","SPG", "SSPG"]
         else:

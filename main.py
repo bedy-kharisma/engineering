@@ -1224,7 +1224,7 @@ def MTBF():
     st.title("Clustering and MTBF Calculator App")
     # File upload section
     st.subheader("Upload your Gangguan XLSX file")
-    file = st.file_uploader("Upload XLSX file", type=["xlsx"])
+    file = st.file_uploader("Upload XLSX file", type=["xlsx","csv"])
     if file is not None:
         file_extension = file.name.split('.')[-1]
         if file_extension.lower() == "xlsx":

@@ -1030,7 +1030,7 @@ def process_df(df, column):
 
 def mtbf_clc(doc):
     doc.add_heading("MTBF Calculation",level=1)
-    choose=st.radio("How are you going to define unique componeny id?",('MPG SPG SSPG (BS EN 15380-2) + Train NUmber + TS + Cluster','Train Number + TS + Cluster','Cluster'),key=2)
+    choose=st.radio("How are you going to define unique componeny id?",('MPG SPG SSPG (BS EN 15380-2) + Train NUmber + Cluster','Train Number + Cluster','Cluster'),key=2)
     uploaded_file = st.file_uploader("Upload Filled delivery dates file, make sure you are using MM/DD/YYYY date format", type=["csv","xlsx"])
     updated_file = st.file_uploader("Upload Updated Cluster csv file", type=["csv","xlsx"])
     # Allow the user to upload the filled Excel sheet
@@ -1074,10 +1074,10 @@ def mtbf_clc(doc):
             merged_df['Tanggal'] = pd.to_datetime(merged_df['Tanggal']).dt.date
             merged_df['Delivery Date'] = pd.to_datetime(merged_df['Delivery Date']).dt.date
             merged_df['Time Difference (hours)']=merged_df['Time Difference (days)']*daily_hours
-            if choose == "MPG SPG SSPG (BS EN 15380-2) + Train NUmber + TS + Cluster" and all(col in merged_df.columns for col in ['MPG', 'SPG', 'SSPG']):
-                merged_df['component_id']=merged_df['Kereta']+'-'+merged_df['TS'].astype(str)+'-'+merged_df['MPG']+'-'+merged_df['SPG']+'-'+merged_df['SSPG']+'-'+merged_df['cluster_label']
-            elif choose == "Train Number + TS + Cluster" and all(col in merged_df.columns for col in ['Kereta', 'TS' ]):
-                merged_df['component_id']=merged_df['Kereta']+'-'+merged_df['TS'].astype(str)+'-'+merged_df['cluster_label']
+            if choose == "MPG SPG SSPG (BS EN 15380-2) + Train NUmber + Cluster" and all(col in merged_df.columns for col in ['MPG', 'SPG', 'SSPG']):
+                merged_df['component_id']=merged_df['Kereta']+'-'+merged_df['MPG']+'-'+merged_df['SPG']+'-'+merged_df['SSPG']+'-'+merged_df['cluster_label']
+            elif choose == "Train Number + Cluster" and all(col in merged_df.columns for col in ['Kereta', 'TS' ]):
+                merged_df['component_id']=merged_df['Kereta']+'-'+merged_df['cluster_label']
             else:
                 merged_df['component_id']=merged_df['cluster_label']           
             cols=['component_id']+merged_df.columns[:-1].tolist()
@@ -1103,7 +1103,7 @@ def mtbf_clc(doc):
             dfs = {}
             summary_df=pd.DataFrame(columns=["Nama Komponen","cluster_label","MTTF"])
             for component_id in unique_klas:
-                if choose == "MPG SPG SSPG (BS EN 15380-2) + Train NUmber + TS + Cluster" and all(col in merged_df.columns for col in ['MPG', 'SPG', 'SSPG']):
+                if choose == "MPG SPG SSPG (BS EN 15380-2) + Train NUmber + Cluster" and all(col in merged_df.columns for col in ['MPG', 'SPG', 'SSPG']):
                      df_klas = merged_df[merged_df['component_id'] == component_id][['TS', 'Tanggal', 'Kereta', 'Klasifikasi Gangguan', 'Nama Komponen', 'MPG', 'SPG', 'SSPG', 'cluster_label', 'Jumlah','Delivery Date','Time Difference (hours)','Time Difference (days)']].sort_values('Tanggal')
                 else: 
                     df_klas = merged_df[merged_df['component_id'] == component_id][['TS', 'Tanggal', 'Kereta', 'Klasifikasi Gangguan', 'Nama Komponen', 'cluster_label', 'Jumlah','Delivery Date','Time Difference (hours)','Time Difference (days)']].sort_values('Tanggal')
@@ -1122,19 +1122,19 @@ def mtbf_clc(doc):
                 dfs[f'{component_id}_df'] = df_klas
             # Access the created DataFrames
             for component_id, df_klas in dfs.items():
-                if choose == "MPG SPG SSPG (BS EN 15380-2) + Train NUmber + TS + Cluster" and all(col in merged_df.columns for col in ['MPG', 'SPG', 'SSPG']):
+                if choose == "MPG SPG SSPG (BS EN 15380-2) + Train NUmber + Cluster" and all(col in merged_df.columns for col in ['MPG', 'SPG', 'SSPG']):
                     df_klas = df_klas[['TS', 'Tanggal', 'Kereta', 'Klasifikasi Gangguan', 'Nama Komponen', 'MPG', 'SPG', 'SSPG', 'cluster_label', 'Delivery Date', 'Time Difference (hours)', 'Time Difference (days)', 'Jumlah', 'Time To Failure (hours)']]
                 else:
                     df_klas = df_klas[['TS', 'Tanggal', 'Kereta', 'Klasifikasi Gangguan', 'Nama Komponen','cluster_label', 'Delivery Date', 'Time Difference (hours)', 'Time Difference (days)', 'Jumlah', 'Time To Failure (hours)']]
                 train_number = df_klas['Kereta'].values[0]
                 ts = df_klas['TS'].values[0]
-                if choose == "MPG SPG SSPG (BS EN 15380-2) + Train NUmber + TS + Cluster" and all(col in merged_df.columns for col in ['MPG', 'SPG', 'SSPG']):
+                if choose == "MPG SPG SSPG (BS EN 15380-2) + Train NUmber + Cluster" and all(col in merged_df.columns for col in ['MPG', 'SPG', 'SSPG']):
                     component_info = str(df_klas['MPG'].tolist()[0]) + '-' + str(df_klas['SPG'].tolist()[0]) + '-' + str(df_klas['SSPG'].tolist()[0]) + '-' + str(df_klas['cluster_label'].tolist()[0])
                 else:
                     component_info = str(df_klas['cluster_label'].tolist()[0])
                 if len(df_klas)>=3:
                     # Formatting the output
-                    Train = "Train Number: {} - TS {}".format(train_number, ts)
+                    Train = "Train Number: {}".format(train_number)
                     Compo = "Component ID: {}".format(component_info)
                     # Displaying the output
                     st.subheader(Train)
@@ -1160,7 +1160,7 @@ def mtbf_clc(doc):
                     summary_df = pd.concat([summary_df[common_columns], df_klas[common_columns]], ignore_index=True)
                 else:
                     # Formatting the output
-                    Train = "Train Number: {} - TS {}".format(train_number, ts) 
+                    Train = "Train Number: {}".format(train_number) 
                     Compo = "Component ID: {}.".format( component_info)
                     # Displaying the output
                     st.subheader(Train)
@@ -1247,9 +1247,9 @@ def MTBF():
         num_data = st.slider('How many of the data you are going to be used in clustering?', 0, len(df), 50)
         df=df.head(num_data)
         st.write(df)
-        choose=st.radio("How are you going to define unique componeny id?",('MPG SPG SSPG (BS EN 15380-2) + Train NUmber + TS + Cluster','Train Number + TS + Cluster','Cluster'),key=1)
+        choose=st.radio("How are you going to define unique componeny id?",('MPG SPG SSPG (BS EN 15380-2) + Train NUmber + Cluster','Train Number + Cluster','Cluster'),key=1)
         # Create a new DataFrame with unique values in 'Nama Komponen'
-        if choose == "MPG SPG SSPG (BS EN 15380-2) + Train NUmber + TS + Cluster" and all(col in merged_df.columns for col in ['MPG', 'SPG', 'SSPG']):
+        if choose == "MPG SPG SSPG (BS EN 15380-2) + Train NUmber + Cluster" and all(col in merged_df.columns for col in ['MPG', 'SPG', 'SSPG']):
             default=["TS", "Tanggal", "Kereta", "Klasifikasi Gangguan", "Nama Komponen", "Jumlah","MPG","SPG", "SSPG"]
             PG=["MPG","SPG", "SSPG"]
         else:

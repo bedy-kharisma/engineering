@@ -1006,7 +1006,7 @@ def process_all_values(df, column):
         else:
             new_rows.append(row)
     df_new = pd.DataFrame(new_rows)
-    df_new = df_new[df_new[column] != "all"]
+    df_new = df_new[df_new[column].str.lower() != "all"]
     return df_new
 
 def process_df(df, column):

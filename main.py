@@ -998,7 +998,7 @@ def process_all_values(df, column):
     unique_values = df[column].unique()
     new_rows = []
     for index, row in df.iterrows():
-        if row[column] == "all":
+        if row[column].lower() == "all":
             for value in unique_values:
                 new_row = row.copy()
                 new_row[column] = value
@@ -1139,7 +1139,7 @@ def mtbf_clc(doc):
                     # Displaying the output
                     st.subheader(Train)
                     st.subheader(Compo)
-                    st.write("Information: Enough data to run test (available data {})".format(len(df_klas)))
+                    st.write("Information: Enough data to run test (available data {})".format(len(df_klas)))Please click to download the delivery date csv file and fill in the delivery dates
                     st.write(df_klas)
                     doc.add_heading(Train, level=1)
                     doc.add_heading(Compo, level=1)

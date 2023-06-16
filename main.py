@@ -1139,7 +1139,7 @@ def mtbf_clc(doc):
                     # Displaying the output
                     st.subheader(Train)
                     st.subheader(Compo)
-                    st.write("Information: Enough data to run test (available data {})".format(len(df_klas)))Please click to download the delivery date csv file and fill in the delivery dates
+                    st.write("Information: Enough data to run test (available data {})".format(len(df_klas)))
                     st.write(df_klas)
                     doc.add_heading(Train, level=1)
                     doc.add_heading(Compo, level=1)

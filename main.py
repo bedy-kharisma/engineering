@@ -656,6 +656,8 @@ def Matcod():
                 sheet.update([database_df.columns.values.tolist()]+database_df.values.tolist())
                 st.info("Total rows :"+str(len(database_df)))
 
+#Create a word doc
+doc=Document()
 # FITTINGS
 def ExponentialFitting(Data):
     Data = np.sort(Data)
@@ -865,10 +867,8 @@ def cases(data, distribution, x):
             PDF[i] = f(x[i])
             if abs(MTTF - x[i]) <= 0.99:
                 RMTTF = R[i]
-        print("Shape:", shape)
-        print("Scale:", scale)  
     else:
-        print("Error: Invalid distribution input")
+        pass#print("Error: Invalid distribution input")
     return hr, R, PDF, MTTF, RMTTF
 #--- END CASES
 
@@ -971,13 +971,23 @@ def test(df, distribution, doc):
     hr, R, PDF, MTTF, RMTTF = cases(data, distribution, t)
     st.success("Predicted failure in operation hour:"+ str(round(MTTF, 2)))
     df['MTTF'] = MTTF
+    df["p-val (Normal / Log-Normal)| M (Weibull)"]=f"{round(pvalNormal,2)}|{round(pvalLogNormal,2)}|{round(M,2)}"
+    #if distribution == "Normal": 
+    #    df["p-val (Normal / Log-Normal)| M (Weibull)"]=pvalNormal
+    #elif distribution == "Log-Normal":
+    #    df["p-val (Normal / Log-Normal)| M (Weibull)"]=pvalLogNormal
+    #else:
+    #    df["p-val (Normal / Log-Normal)| M (Weibull)"]=M
     doc.add_paragraph("Predicted failure in operation hour:"+ str(round(MTTF, 2)))
     # Display the plots
     fig = plot_results(hr, R, PDF, MTTF, RMTTF,data,distribution)
     st.subheader("Plots")
-    st.pyplot(fig)
-    fig.savefig("plot.png")
-    doc.add_picture("plot.png",width=Inches(5))
+    try:
+        st.pyplot(fig)
+        fig.savefig("plot.png")
+        doc.add_picture("plot.png",width=Inches(5))
+    except ValueError:
+        pass
     return df
 
 def remove_text_between_parentheses(text):
@@ -1053,55 +1063,59 @@ def mtbf_clc(doc):
         doc.add_heading("Using "+str(distribution)+" distribution")
         daily_hours=st.number_input("Insert daily operating hours", min_value=0, max_value=24, value=20,step=1)
         doc.add_heading("Assuming it is operated "+str(daily_hours)+" hours per day")
-        if st.button(f'Process MTBF Calculation using {distribution} Distribution'):                 
-            uploaded_df[['Kereta', 'TS']] = uploaded_df['Trainset'].str.split('-', expand=True)
-            uploaded_df = uploaded_df.drop(columns=['Trainset'])
-            uploaded_df = uploaded_df.dropna(how='any')
-            uploaded_df['Kereta'] = uploaded_df['Kereta'].str.strip()
-            uploaded_df['TS'] = uploaded_df['TS'].str.strip()
-            updated_df['TS'] = updated_df['TS'].astype(str).str.split('.').str[0]
-            updated_df['Tanggal']=pd.to_datetime(updated_df['Tanggal']).dt.date
-            # Find delivery time based on matching 'TS' and 'Kereta'
-            merged_df = updated_df
-            merged_df['Delivery Date'] = merged_df.apply(lambda row: 
-                uploaded_df.loc[(uploaded_df['TS'] == row['TS']) & (uploaded_df['Kereta'] == row['Kereta']), 'Delivery Date'].values[0] 
-                if row['TS'] in uploaded_df['TS'].values and row['Kereta'] in uploaded_df['Kereta'].values and uploaded_df.loc[(uploaded_df['TS'] == row['TS']) & (uploaded_df['Kereta'] == row['Kereta'])].shape[0] > 0 
-                else '', axis=1)
-            merged_df['Delivery Date'] = merged_df.apply(lambda row: uploaded_df.loc[(uploaded_df['TS'] == row['TS']) & (uploaded_df['Kereta'] == row['Kereta']), 'Delivery Date'].values[0] if row['TS'] in uploaded_df['TS'].values and row['Kereta'] in uploaded_df['Kereta'].values and uploaded_df.loc[(uploaded_df['TS'] == row['TS']) & (uploaded_df['Kereta'] == row['Kereta'])].shape[0] > 0 else '', axis=1)
-            merged_df['Tanggal'] = pd.to_datetime(merged_df['Tanggal'])
-            merged_df['Delivery Date'] = pd.to_datetime(merged_df['Delivery Date'])
-            merged_df['Time Difference (days)'] = (merged_df['Tanggal'] - merged_df['Delivery Date']).dt.days
-            merged_df['Tanggal'] = pd.to_datetime(merged_df['Tanggal']).dt.date
-            merged_df['Delivery Date'] = pd.to_datetime(merged_df['Delivery Date']).dt.date
-            merged_df['Time Difference (hours)']=merged_df['Time Difference (days)']*daily_hours
-            if choose == "MPG SPG SSPG (BS EN 15380-2) + Train NUmber + Cluster" and all(col in merged_df.columns for col in ['MPG', 'SPG', 'SSPG']):
-                merged_df['component_id']=merged_df['Kereta']+'-'+merged_df['MPG']+'-'+merged_df['SPG']+'-'+merged_df['SSPG']+'-'+merged_df['cluster_label']
-            elif choose == "Train Number + Cluster" and all(col in merged_df.columns for col in ['Kereta', 'TS' ]):
-                merged_df['component_id']=merged_df['Kereta']+'-'+merged_df['cluster_label']
+        #if st.button(f'Process MTBF Calculation using {distribution} Distribution'):                 
+        uploaded_df = uploaded_df.dropna(how='any')
+        updated_df['TS'] = updated_df['TS'].astype(str).str.split('.').str[0]
+        updated_df['Tanggal']=pd.to_datetime(updated_df['Tanggal']).dt.date
+        # Find delivery time based on matching 'TS' and 'Kereta'
+        merged_df = updated_df           
+        merged_df = merged_df.merge(uploaded_df[['Trainset', 'Delivery Date']], how='left', left_on='Kereta', right_on='Trainset')
+        merged_df['Delivery Date'] = merged_df['Delivery Date'].fillna('')
+        merged_df.drop('Trainset', axis=1, inplace=True)
+        merged_df['Tanggal'] = pd.to_datetime(merged_df['Tanggal'])
+        merged_df['Delivery Date'] = pd.to_datetime(merged_df['Delivery Date'])
+        merged_df['Time Difference (days)'] = (merged_df['Tanggal'] - merged_df['Delivery Date']).dt.days
+        merged_df['Tanggal'] = pd.to_datetime(merged_df['Tanggal']).dt.date
+        merged_df['Delivery Date'] = pd.to_datetime(merged_df['Delivery Date']).dt.date
+        merged_df['Time Difference (hours)']=merged_df['Time Difference (days)']*daily_hours
+        if choose == "MPG SPG SSPG (BS EN 15380-2) + Train NUmber + Cluster" and all(col in merged_df.columns for col in ['MPG', 'SPG', 'SSPG']):
+            merged_df['component_id']=merged_df['Kereta']+'-'+merged_df['MPG']+'-'+merged_df['SPG']+'-'+merged_df['SSPG']+'-'+merged_df['cluster_label']
+        elif choose == "Train Number + Cluster" and all(col in merged_df.columns for col in ['Kereta', 'TS' ]):
+            merged_df['component_id']=merged_df['Kereta']+'-'+merged_df['cluster_label']
+        else:
+            merged_df['component_id']=merged_df['cluster_label']           
+        cols=['component_id']+merged_df.columns[:-1].tolist()
+        merged_df=merged_df[cols]        
+        merged_df['Time Difference (hours)'].dropna(inplace=True)
+        merged_df = merged_df[merged_df['Time Difference (hours)'] >= 0]
+        merged_df['Time Difference (days)'].dropna(inplace=True)
+        merged_df = merged_df[merged_df['Time Difference (days)'] >= 0]    
+        
+        filter_choice = st.radio("Filter options", ("Filter data", "Use all data"))
+
+        if filter_choice == "Use all data":
+            pass
+        else:
+            if choose == "Cluster":
+                selected_options = st.multiselect("Select options", merged_df["cluster_label"].unique())
+                merged_df = merged_df[merged_df["cluster_label"].isin(selected_options)]
             else:
-                merged_df['component_id']=merged_df['cluster_label']           
-            cols=['component_id']+merged_df.columns[:-1].tolist()
-            merged_df=merged_df[cols]        
-            merged_df['Time Difference (hours)'].dropna(inplace=True)
-            merged_df = merged_df[merged_df['Time Difference (hours)'] >= 0]
-            merged_df['Time Difference (days)'].dropna(inplace=True)
-            merged_df = merged_df[merged_df['Time Difference (days)'] >= 0]    
-            st.write(merged_df)
-            doc.add_paragraph("Data:")
-            # Add the dataframe as a table
-            table = doc.add_table(merged_df.shape[0] + 1, merged_df.shape[1])
-            table.style = 'Table Grid'  # Apply table grid style
-            # Add column names to the table
-            for i, column_name in enumerate(merged_df.columns):
-                table.cell(0, i).text = column_name
-            # Add data to the table
-            for i, row in enumerate(merged_df.itertuples()):
-                for j, value in enumerate(row[1:]):
-                    table.cell(i + 1, j).text = str(value)        
+                selected_options = st.multiselect("Select options", merged_df["Kereta"].unique())
+                merged_df = merged_df[merged_df["Kereta"].isin(selected_options)]
+                selected_cluster_options = st.multiselect("Select cluster options", merged_df["cluster_label"].unique())
+                merged_df = merged_df[merged_df["cluster_label"].isin(selected_cluster_options)]
+
+        st.write(merged_df)
+
+        
+        if st.button(f'Process MTBF Calculation using {distribution} Distribution'):  
             unique_klas = merged_df['component_id'].unique()
             # Create DataFrames based on unique 'Klas' values
             dfs = {}
-            summary_df=pd.DataFrame(columns=["Nama Komponen","cluster_label","MTTF"])
+            if choose == "Cluster":
+                summary_df=pd.DataFrame(columns=["Nama Komponen","cluster_label","MTTF","p-val (Normal / Log-Normal)| M (Weibull)"])
+            else:
+                summary_df=pd.DataFrame(columns=["Kereta","Nama Komponen","cluster_label","MTTF","p-val (Normal / Log-Normal)| M (Weibull)"])
             for component_id in unique_klas:
                 if choose == "MPG SPG SSPG (BS EN 15380-2) + Train NUmber + Cluster" and all(col in merged_df.columns for col in ['MPG', 'SPG', 'SSPG']):
                      df_klas = merged_df[merged_df['component_id'] == component_id][['TS', 'Tanggal', 'Kereta', 'Klasifikasi Gangguan', 'Nama Komponen', 'MPG', 'SPG', 'SSPG', 'cluster_label', 'Jumlah','Delivery Date','Time Difference (hours)','Time Difference (days)']].sort_values('Tanggal')
@@ -1125,25 +1139,46 @@ def mtbf_clc(doc):
                 if choose == "MPG SPG SSPG (BS EN 15380-2) + Train NUmber + Cluster" and all(col in merged_df.columns for col in ['MPG', 'SPG', 'SSPG']):
                     df_klas = df_klas[['TS', 'Tanggal', 'Kereta', 'Klasifikasi Gangguan', 'Nama Komponen', 'MPG', 'SPG', 'SSPG', 'cluster_label', 'Delivery Date', 'Time Difference (hours)', 'Time Difference (days)', 'Jumlah', 'Time To Failure (hours)']]
                 else:
-                    df_klas = df_klas[['TS', 'Tanggal', 'Kereta', 'Klasifikasi Gangguan', 'Nama Komponen','cluster_label', 'Delivery Date', 'Time Difference (hours)', 'Time Difference (days)', 'Jumlah', 'Time To Failure (hours)']]
-                train_number = df_klas['Kereta'].values[0]
-                ts = df_klas['TS'].values[0]
+                    df_klas = df_klas[['TS', 'Tanggal', 'Kereta', 'Klasifikasi Gangguan', 'Nama Komponen','cluster_label', 'Delivery Date', 'Time Difference (hours)', 'Time Difference (days)', 'Jumlah', 'Time To Failure (hours)']]       
+                try:
+                    train_number = df_klas['Kereta'].values[0]
+                    ts = df_klas['TS'].values[0]
+                except IndexError:
+                    pass
                 if choose == "MPG SPG SSPG (BS EN 15380-2) + Train NUmber + Cluster" and all(col in merged_df.columns for col in ['MPG', 'SPG', 'SSPG']):
-                    component_info = str(df_klas['MPG'].tolist()[0]) + '-' + str(df_klas['SPG'].tolist()[0]) + '-' + str(df_klas['SSPG'].tolist()[0]) + '-' + str(df_klas['cluster_label'].tolist()[0])
+                    try: 
+                        component_info = str(df_klas['MPG'].tolist()[0]) + '-' + str(df_klas['SPG'].tolist()[0]) + '-' + str(df_klas['SSPG'].tolist()[0]) + '-' + str(df_klas['cluster_label'].tolist()[0])
+                    except IndexError:
+                        pass
                 else:
-                    component_info = str(df_klas['cluster_label'].tolist()[0])
+                    try:
+                        component_info = str(df_klas['cluster_label'].tolist()[0])
+                    except IndexError:
+                        pass    
                 if len(df_klas)>=3:
                     # Formatting the output
                     Train = "Train Number: {}".format(train_number)
                     Compo = "Component ID: {}".format(component_info)
                     # Displaying the output
-                    st.subheader(Train)
+                    if choose != "Cluster":
+                        st.subheader(Train)
+                    else:
+                        pass
                     st.subheader(Compo)
                     st.write("Information: Enough data to run test (available data {})".format(len(df_klas)))
-                    st.write(df_klas)
-                    doc.add_heading(Train, level=1)
+                    if choose !="Cluster":
+                        doc.add_heading(Train, level=1)
+                    else:
+                        pass
                     doc.add_heading(Compo, level=1)
                     doc.add_heading("Information: Enough data to run test (available data {})".format(len(df_klas)))
+                    test(df_klas, distribution,doc)
+                    df_klas['MTTF'] = round(df_klas['MTTF'],2).astype(str)
+                    df_klas["p-val (Normal / Log-Normal)| M (Weibull)"] = df_klas["p-val (Normal / Log-Normal)| M (Weibull)"].astype(str)
+
+
+                    st.write(df_klas)
+
                     # Add the dataframe as a table
                     table = doc.add_table(df_klas.shape[0] + 1, df_klas.shape[1])
                     table.style = 'Table Grid'  # Apply table grid style
@@ -1154,24 +1189,36 @@ def mtbf_clc(doc):
                     for i, row in enumerate(df_klas.itertuples()):
                         for j, value in enumerate(row[1:]):
                             table.cell(i + 1, j).text = str(value)
-                    test(df_klas, distribution,doc)
-                    df_klas['MTTF'] = df_klas['MTTF'].astype(str)
+
+
+
                     common_columns = list(set(summary_df.columns) & set(df_klas.columns))
                     summary_df = pd.concat([summary_df[common_columns], df_klas[common_columns]], ignore_index=True)
+
+
+
                 else:
                     # Formatting the output
                     Train = "Train Number: {}".format(train_number) 
                     Compo = "Component ID: {}.".format( component_info)
                     # Displaying the output
-                    st.subheader(Train)
+                    if choose !="Cluster":
+                        st.subheader(Train)
+                    else:
+                        pass
                     st.subheader(Compo)
                     st.write("Information: Not Enough data to run test (minimum number of data: 3, available data {})".format(len(df_klas)))
                     df_klas['MTTF'] = "Not enough data"
                     df_klas['MTTF'] = df_klas['MTTF'].astype(str)
+                    df_klas["p-val (Normal / Log-Normal)| M (Weibull)"]="-"
                     common_columns = list(set(summary_df.columns) & set(df_klas.columns))
                     summary_df = pd.concat([summary_df[common_columns], df_klas[common_columns]], ignore_index=True)
+
                     st.write(df_klas)
-                    doc.add_heading(Train, level=1)
+                    if choose !="Cluster":
+                        doc.add_heading(Train, level=1)
+                    else:
+                        pass
                     doc.add_heading(Compo, level=1)
                     doc.add_paragraph("Information: Not Enough data to run test (minimum number of data: 3, available data {})".format(len(df_klas)))
                     # Add the dataframe as a table
@@ -1184,12 +1231,16 @@ def mtbf_clc(doc):
                     for i, row in enumerate(df_klas.itertuples()):
                         for j, value in enumerate(row[1:]):
                             table.cell(i + 1, j).text = str(value)
-            summary_df = summary_df.drop_duplicates(subset="cluster_label")
-            summary_df = summary_df.reindex(columns=["Nama Komponen","cluster_label","MTTF"])
-            doc2=Document()		
-            doc2.add_heading("Summary", level=1)
-	    # Add the dataframe as a table
-            table = doc2.add_table(summary_df.shape[0] + 1, summary_df.shape[1])
+            if choose =="Cluster":
+                summary_df = summary_df.drop_duplicates(subset=["cluster_label"])
+                summary_df = summary_df.reindex(columns=["Nama Komponen","cluster_label","MTTF","p-val (Normal / Log-Normal)| M (Weibull)"])
+            else:
+                summary_df = summary_df.drop_duplicates(subset=["cluster_label", "Kereta"])
+                summary_df = summary_df.reindex(columns=["Kereta","Nama Komponen","cluster_label","MTTF","p-val (Normal / Log-Normal)| M (Weibull)"])
+            #doc2=Document()
+            doc.add_heading("Summary", level=1)
+            # Add the dataframe as a table
+            table = doc.add_table(summary_df.shape[0] + 1, summary_df.shape[1])
             table.style = 'Table Grid'  # Apply table grid style
             # Add column names to the table
             for i, column_name in enumerate(summary_df.columns):
@@ -1198,24 +1249,14 @@ def mtbf_clc(doc):
             for i, row in enumerate(summary_df.itertuples()):
                 for j, value in enumerate(row[1:]):
                     table.cell(i + 1, j).text = str(value)
-            doc2_bytes = io.BytesIO()
-            doc2.save(doc2_bytes)
-            doc2_bytes.seek(0)		
+            doc_bytes = io.BytesIO()
+            doc.save(doc_bytes)
+            doc_bytes.seek(0)		
             st.write(summary_df)
             st.download_button(
-                label="Download summary docx",
-                data=doc2_bytes.read(),
-                file_name='summary.docx')
-            for element in doc.element.body:
-                doc2.element.body.append(element)
-            doc_bytes = io.BytesIO()
-            doc2.save(doc_bytes)
-            doc_bytes.seek(0)
-            #-----TO EDIT CLUSTERED
-            st.download_button(
-		label="Download report docx",
-		data=doc_bytes.read(),
-		file_name='report.docx')
+            label="Download report docx",
+            data=doc_bytes.read(),
+            file_name='report.docx')
     
 def MTBF():
     st.empty()

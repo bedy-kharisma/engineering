@@ -429,12 +429,13 @@ def Matcod():
     csv_url=(f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv")
     #create dataframe from csv
     database_df=pd.read_csv(csv_url,on_bad_lines='skip')   
-    pickle_file = 'TB1_df.pkl'
-    file_url = 'https://raw.githubusercontent.com/bedy-kharisma/engineering/main/'+ pickle_file
-    response = requests.get(file_url)
-    if response.status_code == 200:
-        content = BytesIO(response.content) 
-        TB1_df=pd.read_pickle(content) 
+    TB1_df = pd.read_pickle('./TB1_df.pkl')
+    pickle_file = 'TB1_df.pkl'  
+    #file_url = 'https://raw.githubusercontent.com/bedy-kharisma/engineering/main/'+ pickle_file
+    #response = requests.get(file_url)
+    #if response.status_code == 200:
+    #    content = BytesIO(response.content) 
+    #    TB1_df=pd.read_pickle(content) 
     pickle_file = 'TB2_df.pkl'   
     file_url = 'https://raw.githubusercontent.com/bedy-kharisma/engineering/main/'+ pickle_file
     response = requests.get(file_url)

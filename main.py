@@ -228,7 +228,7 @@ def Supplier():
 
 def Standards():
     st.empty()
-    standards = pd.read_pickle(".\standards.pkl")
+    standards = pd.read_pickle('./standards.pkl')
     keyword = st.text_input('Pilih keyword yang ingin Anda cari')
     #filter
     filtered_std = standards[standards['text'].str.contains(keyword, case=False)]

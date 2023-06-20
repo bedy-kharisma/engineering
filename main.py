@@ -228,22 +228,17 @@ def Supplier():
 
 def Standards():
     st.empty()
-    # Define the URL of the file on the public GitHub repository
-    file_url = 'https://raw.githubusercontent.com/bedy-kharisma/engineering/main/standards.pkl'
-    # Download the file contents from the URL
     response = requests.get(file_url)
-    if response.status_code == 200:
-        content = BytesIO(response.content)
-        standards = pd.read_pickle(content)
-        keyword = st.text_input('Pilih keyword yang ingin Anda cari')
-        #filter
-        filtered_std = standards[standards['text'].str.contains(keyword, case=False)]
-        standards_df=filtered_std[["location","name","id"]]
-        if keyword!="":
-            st.write(f"{standards_df.shape[0]} number of standards found using keyword : {keyword}")
-        standards_df['link'] = standards_df['id'].apply(lambda x: f'<a target="_blank" href="https://drive.google.com/file/d/{x}/view">{x}</a>')
-        standards_df = standards_df.to_html(escape=False)
-        st.write(standards_df, unsafe_allow_html=True)
+    standards = pd.read_pickle(".\standards.pkl")
+    keyword = st.text_input('Pilih keyword yang ingin Anda cari')
+    #filter
+    filtered_std = standards[standards['text'].str.contains(keyword, case=False)]
+    standards_df=filtered_std[["location","name","id"]]
+    if keyword!="":
+        st.write(f"{standards_df.shape[0]} number of standards found using keyword : {keyword}")
+    standards_df['link'] = standards_df['id'].apply(lambda x: f'<a target="_blank" href="https://drive.google.com/file/d/{x}/view">{x}</a>')
+    standards_df = standards_df.to_html(escape=False)
+    st.write(standards_df, unsafe_allow_html=True)
         
 def FMECA():
     st.empty()

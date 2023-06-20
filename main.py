@@ -430,117 +430,22 @@ def Matcod():
     #create dataframe from csv
     database_df=pd.read_csv(csv_url,on_bad_lines='skip')   
     TB1_df = pd.read_pickle('./TB1_df.pkl')
-    #pickle_file = 'TB1_df.pkl'  
-    #file_url = 'https://raw.githubusercontent.com/bedy-kharisma/engineering/main/'+ pickle_file
-    #response = requests.get(file_url)
-    #if response.status_code == 200:
-    #    content = BytesIO(response.content) 
-    #    TB1_df=pd.read_pickle(content) 
     TB2_df = pd.read_pickle('./TB2_df.pkl')
-    #pickle_file = 'TB2_df.pkl'   
-    #file_url = 'https://raw.githubusercontent.com/bedy-kharisma/engineering/main/'+ pickle_file
-    #response = requests.get(file_url)
-    #if response.status_code == 200:
-    #    content = BytesIO(response.content) 
-    #    TB2_df=pd.read_pickle(content) 
     Fastening_df = pd.read_pickle('./Fastening_df.pkl')
-    #pickle_file = 'Fastening_df.pkl' 
-    #file_url = 'https://raw.githubusercontent.com/bedy-kharisma/engineering/main/'+ pickle_file
-    #response = requests.get(file_url)
-    #if response.status_code == 200:
-    #    content = BytesIO(response.content) 
-    #    Fastening_df=pd.read_pickle(content) 
     maincom_df = pd.read_pickle('./maincom_df.pkl')
-    #pickle_file = 'maincom_df.pkl'
-    #file_url = 'https://raw.githubusercontent.com/bedy-kharisma/engineering/main/'+ pickle_file
-    #response = requests.get(file_url)
-    #if response.status_code == 200:
-    #    content = BytesIO(response.content) 
-    #    maincom_df=pd.read_pickle(content) 
     sw_df = pd.read_pickle('./sw_df.pkl')
-    #pickle_file = 'sw_df.pkl' 
-    #file_url = 'https://raw.githubusercontent.com/bedy-kharisma/engineering/main/'+ pickle_file
-    #response = requests.get(file_url)
-    #if response.status_code == 200:
-    #    content = BytesIO(response.content)
-    #    sw_df=pd.read_pickle(content) 
     el_df = pd.read_pickle('./el_df.pkl')
-    #pickle_file = 'el_df.pkl'
-    #file_url = 'https://raw.githubusercontent.com/bedy-kharisma/engineering/main/'+ pickle_file
-    #response = requests.get(file_url)
-    #if response.status_code == 200:
-    #    content = BytesIO(response.content)
-    #    el_df=pd.read_pickle(content) 
     brake_df = pd.read_pickle('./brake_df.pkl')
-    #pickle_file = 'brake_df.pkl'
-    #file_url = 'https://raw.githubusercontent.com/bedy-kharisma/engineering/main/'+ pickle_file
-    #response = requests.get(file_url)
-    #if response.status_code == 200:
-    #    content = BytesIO(response.content)
-    #    brake_df=pd.read_pickle(content) 
     bogie_df = pd.read_pickle('./bogie_df.pkl')
-    #pickle_file = 'bogie_df.pkl'
-    #file_url = 'https://raw.githubusercontent.com/bedy-kharisma/engineering/main/'+ pickle_file
-    #response = requests.get(file_url)
-    #if response.status_code == 200:
-    #    content = BytesIO(response.content)
-    #    bogie_df=pd.read_pickle(content) 
     coupler_df = pd.read_pickle('./coupler_df.pkl')
-    #pickle_file = 'coupler_df.pkl'    
-    #file_url = 'https://raw.githubusercontent.com/bedy-kharisma/engineering/main/'+ pickle_file
-    #response = requests.get(file_url)
-    #if response.status_code == 200:
-    #    content = BytesIO(response.content)
-    #    coupler_df=pd.read_pickle(content) 
     interior_df = pd.read_pickle('./interior_df.pkl')
-    #pickle_file = 'interior_df.pkl'
-    #file_url = 'https://raw.githubusercontent.com/bedy-kharisma/engineering/main/'+ pickle_file
-    #response = requests.get(file_url)
-    #if response.status_code == 200:
-    #    content = BytesIO(response.content)
-    #    interior_df=pd.read_pickle(content) 
     piping_df = pd.read_pickle('./piping_df.pkl')
-    #pickle_file = 'piping_df.pkl'
-    #file_url = 'https://raw.githubusercontent.com/bedy-kharisma/engineering/main/'+ pickle_file
-    #response = requests.get(file_url)
-    #if response.status_code == 200:
-    #    content = BytesIO(response.content)
-    #    piping_df=pd.read_pickle(content)
     cons_df = pd.read_pickle('./cons_df.pkl')
-    #pickle_file = 'cons_df.pkl'
-    #file_url = 'https://raw.githubusercontent.com/bedy-kharisma/engineering/main/'+ pickle_file
-    #response = requests.get(file_url)
-    #if response.status_code == 200:
-    #    content = BytesIO(response.content)
-    #    cons_df=pd.read_pickle(content)
     tools_df = pd.read_pickle('./tools_df.pkl')
-    #pickle_file = 'tools_df.pkl'
-    #file_url = 'https://raw.githubusercontent.com/bedy-kharisma/engineering/main/'+ pickle_file
-    #response = requests.get(file_url)
-    #if response.status_code == 200:
-    #    content = BytesIO(response.content)
-    #    tools_df=pd.read_pickle(content)
     raw_df = pd.read_pickle('./raw_df.pkl')
-    #pickle_file = 'raw_df.pkl' 
-    #file_url = 'https://raw.githubusercontent.com/bedy-kharisma/engineering/main/'+ pickle_file
-    #response = requests.get(file_url)
-    #if response.status_code == 200:
-    #    content = BytesIO(response.content)
-    #    raw_df=pd.read_pickle(content)
     spare_df = pd.read_pickle('./spare_df.pkl')
-    #pickle_file = 'spare_df.pkl'
-    #file_url = 'https://raw.githubusercontent.com/bedy-kharisma/engineering/main/'+ pickle_file
-    #response = requests.get(file_url)
-    #if response.status_code == 200:
-    #    content = BytesIO(response.content)
-    #    spare_df=pd.read_pickle(content)
     facilities_df = pd.read_pickle('./facilities_df.pkl')
-    #pickle_file = 'facilities_df.pkl'
-    #file_url = 'https://raw.githubusercontent.com/bedy-kharisma/engineering/main/'+ pickle_file
-    #response = requests.get(file_url)
-    #if response.status_code == 200:
-    #    content = BytesIO(response.content)
-    #    facilities_df=pd.read_pickle(content)
+
 
     st.title("MATERIAL CODE")
     tab1, tab2 = st.tabs(["Request", "Verification"])

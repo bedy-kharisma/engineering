@@ -228,7 +228,6 @@ def Supplier():
 
 def Standards():
     st.empty()
-    response = requests.get(file_url)
     standards = pd.read_pickle(".\standards.pkl")
     keyword = st.text_input('Pilih keyword yang ingin Anda cari')
     #filter

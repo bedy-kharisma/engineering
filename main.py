@@ -6,14 +6,14 @@ from st_aggrid.grid_options_builder import GridOptionsBuilder
 import dash_ag_grid as dag              
 from dash import Dash, html, dcc, Input, Output, State, no_update
 import dash_bootstrap_components as dbc
-import  openpyxl
-import requests
+import openpyxl
 import datetime 
 import pytz
 import joblib
 from io import BytesIO
 from github import Github
 import io
+from io import BytesIO
 import base64
 import pickle
 from github import Github, UnknownObjectException
@@ -26,7 +26,6 @@ from sklearn.cluster import KMeans, MiniBatchKMeans
 from sklearn.metrics import silhouette_score
 import re
 import os
-from io import BytesIO
 import numpy as np
 from scipy.integrate import quad
 from scipy.stats import norm
@@ -440,8 +439,6 @@ def Matcod():
     raw_df = pd.read_pickle('./raw_df.pkl')
     spare_df = pd.read_pickle('./spare_df.pkl')
     facilities_df = pd.read_pickle('./facilities_df.pkl')
-
-
     st.title("MATERIAL CODE")
     tab1, tab2 = st.tabs(["Request", "Verification"])
     with tab1:
@@ -573,8 +570,7 @@ def Matcod():
                 sheet.update([database_df.columns.values.tolist()]+database_df.values.tolist())
                 st.info("Total rows :"+str(len(database_df)))
 
-#Create a word doc
-doc=Document()
+
 # FITTINGS
 def ExponentialFitting(Data):
     Data = np.sort(Data)
@@ -1007,9 +1003,7 @@ def mtbf_clc(doc):
         merged_df = merged_df[merged_df['Time Difference (hours)'] >= 0]
         merged_df['Time Difference (days)'].dropna(inplace=True)
         merged_df = merged_df[merged_df['Time Difference (days)'] >= 0]    
-        
         filter_choice = st.radio("Filter options", ("Filter data", "Use all data"))
-
         if filter_choice == "Use all data":
             pass
         else:
@@ -1021,10 +1015,7 @@ def mtbf_clc(doc):
                 merged_df = merged_df[merged_df["Kereta"].isin(selected_options)]
                 selected_cluster_options = st.multiselect("Select cluster options", merged_df["cluster_label"].unique())
                 merged_df = merged_df[merged_df["cluster_label"].isin(selected_cluster_options)]
-
         st.write(merged_df)
-
-        
         if st.button(f'Process MTBF Calculation using {distribution} Distribution'):  
             unique_klas = merged_df['component_id'].unique()
             # Create DataFrames based on unique 'Klas' values
@@ -1092,10 +1083,7 @@ def mtbf_clc(doc):
                     test(df_klas, distribution,doc)
                     df_klas['MTTF'] = round(df_klas['MTTF'],2).astype(str)
                     df_klas["p-val (Normal / Log-Normal)| M (Weibull)"] = df_klas["p-val (Normal / Log-Normal)| M (Weibull)"].astype(str)
-
-
                     st.write(df_klas)
-
                     # Add the dataframe as a table
                     table = doc.add_table(df_klas.shape[0] + 1, df_klas.shape[1])
                     table.style = 'Table Grid'  # Apply table grid style
@@ -1106,14 +1094,8 @@ def mtbf_clc(doc):
                     for i, row in enumerate(df_klas.itertuples()):
                         for j, value in enumerate(row[1:]):
                             table.cell(i + 1, j).text = str(value)
-
-
-
                     common_columns = list(set(summary_df.columns) & set(df_klas.columns))
                     summary_df = pd.concat([summary_df[common_columns], df_klas[common_columns]], ignore_index=True)
-
-
-
                 else:
                     # Formatting the output
                     Train = "Train Number: {}".format(train_number) 
@@ -1130,7 +1112,6 @@ def mtbf_clc(doc):
                     df_klas["p-val (Normal / Log-Normal)| M (Weibull)"]="-"
                     common_columns = list(set(summary_df.columns) & set(df_klas.columns))
                     summary_df = pd.concat([summary_df[common_columns], df_klas[common_columns]], ignore_index=True)
-
                     st.write(df_klas)
                     if choose !="Cluster":
                         doc.add_heading(Train, level=1)
@@ -1299,8 +1280,6 @@ def MTBF():
         st.subheader("Or if you already have filled delivery data and cluster data, upload to the following")
         mtbf_clc(doc)
 	
-
-
 ##-- CHAT	
 def chat():
 	st.empty()
@@ -1342,7 +1321,6 @@ def chat():
 			st.write(view_df, unsafe_allow_html=True)
 		else:
 			st.write("No data contain specific keyword")
-
 
 st.empty()		
 page_names_to_funcs = {

@@ -515,7 +515,7 @@ def Matcod():
                     requester = st.text_input("Insert Requester ID")
                     submit= st.form_submit_button("Submit")
                 if submit:
-                    database_df = database_df.append({'Kode Material': code+user_input, 'Deskripsi': deskripsi, 'Specification':   spec,'UoM':  uom,'Requester':   requester, 'Verification Status': "Unverified"}, ignore_index=True)    
+                    database_df = database_df.append({'Kode Material': code+user_input, 'Deskripsi': deskripsi, 'Specification':   spec,'UoM':  uom,'Requester':   requester, 'Verification Status': "Unverified", 'Submission Time':datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}, ignore_index=True)    
                     database_df = database_df.astype(str)
                     sheet_url = st.secrets["private_gsheets_url"]
                     sheet=client.open("database").sheet1

@@ -1222,7 +1222,6 @@ def MTBF():
             dfx['Nama Komponen'] = dfx['Nama Komponen'].apply(remove_whitespace)
             dfx['Nama Komponen'] = dfx['Nama Komponen'].apply(remove_text_between_parentheses)
             dfx['Nama Komponen'] = dfx['Nama Komponen'].apply(lambda x: x.lower() if isinstance(x, str) else x)
-            # Preprocess the text data
             vectorizer = TfidfVectorizer(stop_words='english')
             X = vectorizer.fit_transform(dfx['Nama Komponen'].values.astype('U'))
             max_clusters = int(round(0.8 * dfx['Nama Komponen'].nunique(), 0))
@@ -1242,9 +1241,7 @@ def MTBF():
             kmeans.fit(X)
             # Get the cluster labels
             labels = kmeans.labels_
-            # Add the cluster labels as a column next to 'Nama Komponen'
             dfx['cluster_label'] = labels
-            # Create a dictionary to store the first value in each cluster
             cluster_first_values = {}
             for cluster_label in set(labels):
                 cluster_values = dfx.loc[dfx['cluster_label'] == cluster_label, 'Nama Komponen']
@@ -1252,22 +1249,18 @@ def MTBF():
                 cluster_first_values[cluster_label] = first_value
             # Update the 'cluster_label' column with the first value in each cluster
             dfx['cluster_label'] = dfx['cluster_label'].map(cluster_first_values)
-            # Move the 'Jumlah' column to the rightmost position
             columns = dfx.columns.tolist()
             columns.remove('Jumlah')
             columns.append('Jumlah')
             dfx = dfx[columns]
             st.write(dfx)
-            # Download button
             csv_data = dfx.to_csv(index=False).encode('utf-8')
-            #-----TO EDIT CLUSTERED
             st.download_button(
                                 label="We have clustered the component's name using Machine Learning, if you want to edit it, Click to download data as CSV then upload it again",
                                 data=csv_data,
                                 file_name='cluster.csv',
                                 mime='text/csv',)
         st.markdown("---") 
-                # Provide a download button for the Excel file
         st.subheader("Please click to download the delivery date csv file and fill in the delivery dates")
         st.download_button(
                             label="Download the delivery csv file template",
@@ -1279,11 +1272,9 @@ def MTBF():
         st.markdown("---") 
         st.subheader("Or if you already have filled delivery data and cluster data, upload to the following")
         mtbf_clc(doc)
-	
-##-- CHAT	
+		
 def chat():
 	st.empty()
-	# Choose a topic
 	st.write("""This App uses AI, though sometimes it provides correct answer, sometimes it may not. Always use your own discretion.
 		This AI only fit for a short question answering 
 		This AI uses paid API, get your openai api key [here](https://platform.openai.com/account/api-keys)""")
@@ -1301,7 +1292,6 @@ def chat():
 	selected_df['link'] = selected_df['id'].apply(lambda x: f'<a target="_blank" href="https://drive.google.com/file/d/{x}/view">{x}</a>')
 	selected_df = selected_df.drop("id", axis=1)
 	if st.button("Process"):
-	# Filter by keyword
 		if selected_df.shape[0] > 0:
 			joined = ",".join(filtered_std['text'].astype(str))
 			doc = LangchainDocument(page_content=joined)

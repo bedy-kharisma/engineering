@@ -236,7 +236,7 @@ def Standards():
     # If there are multiple keywords, update the mask with logical OR operation
     if len(keywords) > 1:
         for key in keywords[1:]:
-            mask |= standards['text'].str.contains(key, case=False)
+            mask &= standards['text'].str.contains(key, case=False)
     # Apply the mask to filter the dataframe
     filtered_std = standards[mask]
     standards_df=filtered_std[["location","name","id"]]

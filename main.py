@@ -229,8 +229,16 @@ def Standards():
     st.empty()
     standards = pd.read_pickle('./standards.pkl')
     keyword = st.text_input('Pilih keyword yang ingin Anda cari')
-    #filter
-    filtered_std = standards[standards['text'].str.contains(keyword, case=False)]
+    # Split the input keyword into separate terms
+    keywords = keyword.lower().split(', ')
+    # Create a boolean mask to filter the dataframe
+    mask = standards['text'].str.contains(keywords[0], case=False)
+    # If there are multiple keywords, update the mask with logical OR operation
+    if len(keywords) > 1:
+        for key in keywords[1:]:
+            mask |= standards['text'].str.contains(key, case=False)
+    # Apply the mask to filter the dataframe
+    filtered_std = standards[mask]
     standards_df=filtered_std[["location","name","id"]]
     if keyword!="":
         st.write(f"{standards_df.shape[0]} number of standards found using keyword : {keyword}")

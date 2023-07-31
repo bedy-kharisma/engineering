@@ -631,7 +631,7 @@ def WeibullFittingMLE(Data):
     Data = np.sort(Data)
     r = len(Data)
     third = np.sum(np.log(Data)) / r
-    shape = None
+    shape = r
     for i in np.arange(0.01, 10, 0.001):
         first = 1 / i
         second = np.sum((Data**i) * np.log(Data)) / np.sum(Data**i)

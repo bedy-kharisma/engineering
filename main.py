@@ -954,7 +954,9 @@ def process_df(df, column):
         else:
             new_rows.append(row)
     df_new = pd.DataFrame(new_rows)
-    df_new = df_new.fillna(df_new.loc[df_new[column].str.lower() == "all"].iloc[0])
+    if "all" in df_new[column].str.lower().values:
+        df_new = df_new.fillna(df_new.loc[df_new[column].str.lower() == "all"].iloc[0])
+
     df_new = df_new[df_new[column].str.lower() != "all"]
     df_new = df_new.reset_index(drop=True)
     return df_new

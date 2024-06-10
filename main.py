@@ -36,11 +36,11 @@ from docx.shared import Inches
 import warnings
 #for chat
 #from langchain.embeddings.openai import OpenAIEmbeddings
-from langchain.vectorstores import Chroma
-from langchain.docstore.document import Document as LangchainDocument
-from langchain.llms import OpenAI
-from langchain.chains import RetrievalQA
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+#from langchain.vectorstores import Chroma
+#from langchain.docstore.document import Document as LangchainDocument
+#from langchain.llms import OpenAI
+#from langchain.chains import RetrievalQA
+#from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 warnings.filterwarnings("ignore")
 

@@ -35,7 +35,7 @@ from docx import Document
 from docx.shared import Inches
 import warnings
 #for chat
-from langchain.embeddings.openai import OpenAIEmbeddings
+#from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.vectorstores import Chroma
 from langchain.docstore.document import Document as LangchainDocument
 from langchain.llms import OpenAI
@@ -1283,44 +1283,44 @@ def MTBF():
         st.subheader("Or if you already have filled delivery data and cluster data, upload to the following")
         mtbf_clc(doc)
 		
-def chat():
-	st.empty()
-	st.write("""This App uses AI, though sometimes it provides correct answer, sometimes it may not. Always use your own discretion.
-		This AI only fit for a short question answering 
-		This AI uses paid API, get your openai api key [here](https://platform.openai.com/account/api-keys)""")
-	OPENAI_API_KEY=st.text_input("insert openai api",type="password")
-	keyword = st.text_input("choose topic","running dynamic")
-	query = st.text_input("insert query","vehicle at what speed that must perform dynamic performance test?")
-	df = pd.read_pickle('./standards.pkl')
-	df['num_chars'] = df['text'].apply(lambda x: len(x))
-	df = df[df['num_chars'] != 0]
-	unique_values = set(df["location"].str.split("/").str[1])
-	std_type = st.multiselect('Select Standards',unique_values,unique_values)
-	filtered_std  = df[df["location"].apply(lambda x: any(item in x for item in std_type))]
-	filtered_std = filtered_std[filtered_std['text'].str.contains(keyword, flags=re.IGNORECASE)]
-	selected_df = filtered_std[["location", "name", "id","text"]]
-	selected_df['link'] = selected_df['id'].apply(lambda x: f'<a target="_blank" href="https://drive.google.com/file/d/{x}/view">{x}</a>')
-	selected_df = selected_df.drop("id", axis=1)
-	if st.button("Process"):
-		if selected_df.shape[0] > 0:
-			joined = ",".join(filtered_std['text'].astype(str))
-			doc = LangchainDocument(page_content=joined)
-			text_splitter = RecursiveCharacterTextSplitter(chunk_size = 1000,chunk_overlap  = 20,length_function = len)
-			texts = text_splitter.split_documents([doc])
-			embeddings = OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY)
-			docsearch = Chroma.from_documents(texts, embeddings)
-			qa = RetrievalQA.from_chain_type(llm=OpenAI(openai_api_key=OPENAI_API_KEY), chain_type="map_rerank", retriever=docsearch.as_retriever(),return_source_documents=True)
-			result = qa({"query": query})
-			st.write("Answer :")
-			st.write(result["result"])
-			st.markdown("---")
-			st.write("Sources :")
-			source_documents = [doc.page_content for doc in result["source_documents"]]
-			unique_sources = pd.concat([selected_df[selected_df["text"].str.contains(max(doc.split("."), key=len).strip(), case=False)][["location", "link"]] for doc in source_documents]).drop_duplicates(subset=["location", "link"])
-			view_df = unique_sources.to_html(index=False,escape=False)
-			st.write(view_df, unsafe_allow_html=True)
-		else:
-			st.write("No data contain specific keyword")
+#def chat():
+#	st.empty()
+#	st.write("""This App uses AI, though sometimes it provides correct answer, sometimes it may not. Always use your own discretion.
+#		This AI only fit for a short question answering 
+#		This AI uses paid API, get your openai api key [here](https://platform.openai.com/account/api-keys)""")
+#	OPENAI_API_KEY=st.text_input("insert openai api",type="password")
+#	keyword = st.text_input("choose topic","running dynamic")
+#	query = st.text_input("insert query","vehicle at what speed that must perform dynamic performance test?")
+#	df = pd.read_pickle('./standards.pkl')
+#	df['num_chars'] = df['text'].apply(lambda x: len(x))
+#	df = df[df['num_chars'] != 0]
+#	unique_values = set(df["location"].str.split("/").str[1])
+#	std_type = st.multiselect('Select Standards',unique_values,unique_values)
+#	filtered_std  = df[df["location"].apply(lambda x: any(item in x for item in std_type))]
+#	filtered_std = filtered_std[filtered_std['text'].str.contains(keyword, flags=re.IGNORECASE)]
+#	selected_df = filtered_std[["location", "name", "id","text"]]
+#	selected_df['link'] = selected_df['id'].apply(lambda x: f'<a target="_blank" href="https://drive.google.com/file/d/{x}/view">{x}</a>')
+#	selected_df = selected_df.drop("id", axis=1)
+#	if st.button("Process"):
+#		if selected_df.shape[0] > 0:
+#			joined = ",".join(filtered_std['text'].astype(str))
+#			doc = LangchainDocument(page_content=joined)
+#			text_splitter = RecursiveCharacterTextSplitter(chunk_size = 1000,chunk_overlap  = 20,length_function = len)
+#			texts = text_splitter.split_documents([doc])
+#			embeddings = OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY)
+#			docsearch = Chroma.from_documents(texts, embeddings)
+#			qa = RetrievalQA.from_chain_type(llm=OpenAI(openai_api_key=OPENAI_API_KEY), chain_type="map_rerank", retriever=docsearch.as_retriever(),return_source_documents=True)
+#			result = qa({"query": query})
+#			st.write("Answer :")
+#			st.write(result["result"])
+#			st.markdown("---")
+#			st.write("Sources :")
+#			source_documents = [doc.page_content for doc in result["source_documents"]]
+#			unique_sources = pd.concat([selected_df[selected_df["text"].str.contains(max(doc.split("."), key=len).strip(), case=False)][["location", "link"]] for doc in source_documents]).drop_duplicates(subset=["location", "link"])
+#			view_df = unique_sources.to_html(index=False,escape=False)
+#			st.write(view_df, unsafe_allow_html=True)
+#		else:
+#			st.write("No data contain specific keyword")
 
 st.empty()		
 page_names_to_funcs = {
@@ -1332,7 +1332,7 @@ page_names_to_funcs = {
     "Material Code":Matcod,
     "Possible Supplier":Supplier,
     "Standards finder":Standards,
-    "Talk To Your Standards":chat,
+    #"Talk To Your Standards":chat,
     }
 
 selected_page = st.sidebar.radio("Select a page", page_names_to_funcs.keys())
